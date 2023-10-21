@@ -13,7 +13,7 @@
         //Ausgabe des Netzes aus Eingangsvektor von Doubles erzeugen (Vorwärts propagieren)
         public double[] Calculate(double[] eingabevektor)
         {
-            //NettoInput + Ausgabe der Eingabeneuronen setzen;
+            //NettoInput + Ausgabe der Eingabeneuronen setzen;                                
             var firstLayer = Neurons[0];
             for (int i = 0; i < firstLayer.Count(); i++)
             {

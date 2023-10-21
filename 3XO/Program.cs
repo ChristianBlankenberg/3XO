@@ -11,11 +11,22 @@ namespace TicTacToe
     {
         static void Main(string[] args)
         {
-            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            //consoleGame.Test();
+            //consoleGame.Run();
 
-            consoleGame.Test();
+            //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
+            //gameNeuronalNet.Init();
+            //var outputs = gameNeuronalNet.Test();
+            //foreach(var output in outputs)
+            //{
+            //    Console.WriteLine(output);
+            //}
 
-            consoleGame.Run();
+            //Console.ReadKey();
+
+            GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
+            gameNeuronalNet.Train();
         }
     }
 }

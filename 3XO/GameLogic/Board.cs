@@ -57,19 +57,17 @@ namespace TicTacToe.GameLogic
 
         internal Player Get(Coordinates coordinates) => this.board[coordinates.X, coordinates.Y];
 
+        internal void Set(int fieldNr, Player playerOrComputer)
+        {
+            Coordinates coordinates = new Coordinates(fieldNr);
+            this.board[coordinates.X, coordinates.Y] = playerOrComputer;
+        }    
+
         internal void Set(int x, int y, Player playerOrComputer) => this.board[x, y] = playerOrComputer;
 
         internal bool IsEmpty(int x, int y) => this.board[x, y] == Player.None;
 
-        internal List<Player> Fields()
-        {
-            var result = new List<Player>();
-            result.AddRange(Spalte(0));
-            result.AddRange(Spalte(1));
-            result.AddRange(Spalte(2));
-
-            return result;
-        }
+        internal List<Player> Fields() => Enumerable.Range(0, 9).Select(idx => this.Get(idx)).ToList();
 
         internal List<string> Print()
         {
@@ -86,11 +84,41 @@ namespace TicTacToe.GameLogic
             return output;
         }
 
-        private string GetField(int x, int y)
-        {
-            return this.board[x, y].AsString();
+        internal bool Full() => this.Fields().All(f => f == Player.Computer || f == Player.Player);
 
+        internal Player Winner()
+        {
+            for (int nr = 0; nr < 3; nr++)
+            {
+                var reihe = this.Reihe(nr);
+                if (reihe.All(f => f == Player.Player) || reihe.All(f => f == Player.Computer))
+                {
+                    return reihe.First();
+                }
+
+                var spalte = this.Spalte(nr);
+                if (spalte.All(f => f == Player.Player) || spalte.All(f => f == Player.Computer))
+                {
+                    return spalte.First();
+                }
+            }
+
+            var diagonale = this.DiagonaleLIURO();
+            if (diagonale.All(f => f == Player.Player) || diagonale.All(f => f == Player.Computer))
+            {
+                return diagonale.First();
+            }
+
+            diagonale = this.DiagonaleLOURU();
+            if (diagonale.All(f => f == Player.Player) || diagonale.All(f => f == Player.Computer))
+            {
+                return diagonale.First();
+            }
+
+            return Player.None;
         }
+
+        private string GetField(int x, int y) => this.board[x, y].AsString();
 
         private Board()
         {
