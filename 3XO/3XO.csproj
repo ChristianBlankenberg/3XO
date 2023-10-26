@@ -50,6 +50,7 @@
     <Compile Include="GameLogic\Game.cs" />
     <Compile Include="GameLogic\GameNeuronalNet.cs" />
     <Compile Include="GameLogic\Player.cs" />
+    <Compile Include="GameLogic\QLearnLogic.cs" />
     <Compile Include="NeuronalNet\Data\AusgabeNormal.cs" />
     <Compile Include="NeuronalNet\Data\IAktivierung.cs" />
     <Compile Include="NeuronalNet\Data\IAusgabe.cs" />

@@ -10,7 +10,6 @@ namespace TicTacToe.GameLogic
 
         private GameNeuronalNet gameNeuronal;
 
-
         internal bool Over()
         {
             if (this.board.Full())
@@ -29,6 +28,8 @@ namespace TicTacToe.GameLogic
 
         internal List<string> PrintBoard() => this.board.Print();
 
+        internal string BoardToString() => this.board.ToString();
+
         internal Game(Board board)
         {
             this.board = board;
@@ -37,5 +38,10 @@ namespace TicTacToe.GameLogic
         }
 
         internal Coordinates GetCoordinatesFromNeuronalNet() => this.gameNeuronal.GetOutput(this.board);
+
+        public void Test()
+        {
+
+        }
     }
 }

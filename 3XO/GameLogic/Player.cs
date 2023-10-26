@@ -15,6 +15,25 @@ namespace TicTacToe.GameLogic
 
     internal static class PlayerExtensions
     {
+        internal static Player PlayerFromString(this string playerString)
+        {
+            if (playerString == " ")
+            {
+                return Player.None;
+            }
+            else if (playerString == "O")
+            {
+                return Player.Computer;
+            }
+            else if (playerString == "X")
+            {
+                return Player.Player;
+            }
+
+            return Player.Unknown;
+        }
+
+
         internal static string AsString(this Player player)
         {
             switch (player)

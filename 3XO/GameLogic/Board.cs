@@ -8,6 +8,49 @@ namespace TicTacToe.GameLogic
     {
         private Player[,] board;
 
+        public string ToString() => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
+
+        public Board(string boardString) : this()
+        {
+            var fields = boardString.Split(new char[] { ';' });
+            for(int fieldNr = 0;fieldNr < fields.Length; fieldNr++)
+            {
+                this.Set(fieldNr, fields[fieldNr].PlayerFromString());
+            }
+        }
+
+        public static bool operator == (Board a, Board b)
+        {
+            if (!ReferenceEquals(a, null))
+            {
+                return a.Equals(b);
+            }
+            else
+            {
+                return ReferenceEquals(b, null);
+            }
+        }
+
+        public static bool operator !=(Board a, Board b) => !(a == b);
+
+        public override bool Equals(object o)
+        {
+            if (o != null && o is Board board)
+            {
+                for (int fieldNr = 0; fieldNr < 9; fieldNr++)
+                {
+                    if (this.Get(fieldNr) != board.Get(fieldNr))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         internal static Board Empty()
         {
             return new Board();
@@ -61,7 +104,7 @@ namespace TicTacToe.GameLogic
         {
             Coordinates coordinates = new Coordinates(fieldNr);
             this.board[coordinates.X, coordinates.Y] = playerOrComputer;
-        }    
+        }
 
         internal void Set(int x, int y, Player playerOrComputer) => this.board[x, y] = playerOrComputer;
 

@@ -37,39 +37,6 @@ namespace TicTacToe.GameLogic
             this.neuronalesNetz.Train(1000000, 0.3, 0.001, trainingsMuster);
         }
 
-        internal void Train()
-        {
-            this.SetOnBoard(Board.Empty(), Player.Player);
-        }
-
-        private void SetOnBoard(Board board, Player player)
-        {
-            if (board.Full() || board.Winner() != Player.None)
-            {
-                var lines = board.Print();
-
-                foreach (var line in lines)
-                {
-                    File.AppendAllText("3XO.txt", $"{line}{Environment.NewLine}");
-                }
-
-                File.AppendAllText("3XO.txt", $"{Environment.NewLine}");
-            }
-            else
-            {
-                for (int fieldNr = 0; fieldNr < 9; fieldNr++)
-                {
-                    Board newBoard = board.Copy();
-                    Coordinates coordinates = new Coordinates(fieldNr);
-                    if (newBoard.Get(fieldNr) == Player.None)
-                    {
-                        newBoard.Set(fieldNr, player);
-                        this.SetOnBoard(newBoard, player == Player.Player ? Player.Computer : Player.Player);
-                    }   
-                }
-            }
-        }
-
         internal List<string> Test()
         {
             List<ITrainingsMuster> trainingsMuster = new List<ITrainingsMuster>();

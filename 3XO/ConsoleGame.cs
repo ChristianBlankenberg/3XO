@@ -2,6 +2,7 @@
 namespace TicTacToe
 {
     using System;
+    using System.IO;
     using TicTacToe.GameLogic;
 
     internal class ConsoleGame
@@ -16,12 +17,12 @@ namespace TicTacToe
         internal void PrintBoard()
         {
             Console.Clear();
-
+           
             var output = this.game.PrintBoard();
             foreach (var line in output)
             {
                 Console.WriteLine(line);
-            }
+            }            
         }
 
         internal void Test()

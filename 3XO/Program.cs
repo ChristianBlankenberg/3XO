@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GameLogic;
 using TicTacToe.GameLogic;
 
 namespace TicTacToe
@@ -11,9 +12,9 @@ namespace TicTacToe
     {
         static void Main(string[] args)
         {
-            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
-            //consoleGame.Test();
-            //consoleGame.Run();
+            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            consoleGame.Test();
+            consoleGame.Run();
 
             //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
             //gameNeuronalNet.Init();
@@ -25,8 +26,12 @@ namespace TicTacToe
 
             //Console.ReadKey();
 
-            GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
-            gameNeuronalNet.Train();
+            //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
+            //gameNeuronalNet.Train();
+
+            //QLearnLogic qLearnLogic = new QLearnLogic();
+            //qLearnLogic.QLearn();
+  
         }
     }
 }
