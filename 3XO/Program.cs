@@ -12,9 +12,12 @@ namespace TicTacToe
     {
         static void Main(string[] args)
         {
-            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
-            consoleGame.Test();
-            consoleGame.Run();
+            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            //consoleGame.Debug();
+
+            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            //consoleGame.Test();
+            //consoleGame.Run();
 
             //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
             //gameNeuronalNet.Init();
@@ -29,9 +32,9 @@ namespace TicTacToe
             //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
             //gameNeuronalNet.Train();
 
-            //QLearnLogic qLearnLogic = new QLearnLogic();
-            //qLearnLogic.QLearn();
-  
+            QLearnLogic qLearnLogic = new QLearnLogic();
+            qLearnLogic.QLearn();
+
         }
     }
 }

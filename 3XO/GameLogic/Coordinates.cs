@@ -35,7 +35,7 @@ namespace TicTacToe.GameLogic
 
         internal int Y { get; }
 
-        internal int GetFieldNr => this.Y * 3 + this.X;
+        internal int FieldNr => this.Y * 3 + this.X;
       
     }
 }

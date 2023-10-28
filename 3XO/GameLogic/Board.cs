@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 namespace TicTacToe.GameLogic
 {
-    internal class Board
-    {
-        private Player[,] board;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-        public string ToString() => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
+    [Serializable]
+    public class Board
+    {
+        public List<Player> BoardFields;
+
+        public string ToString() 
+            => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
 
         public Board(string boardString) : this()
         {
@@ -20,18 +23,10 @@ namespace TicTacToe.GameLogic
         }
 
         public static bool operator == (Board a, Board b)
-        {
-            if (!ReferenceEquals(a, null))
-            {
-                return a.Equals(b);
-            }
-            else
-            {
-                return ReferenceEquals(b, null);
-            }
-        }
+            => (!ReferenceEquals(a, null)) ? a.Equals(b) : ReferenceEquals(b, null);
 
-        public static bool operator !=(Board a, Board b) => !(a == b);
+        public static bool operator !=(Board a, Board b) 
+            => !(a == b);
 
         public override bool Equals(object o)
         {
@@ -51,18 +46,15 @@ namespace TicTacToe.GameLogic
             return false;
         }
 
-        internal static Board Empty()
-        {
-            return new Board();
-        }
+        internal static Board Empty() 
+            => new Board();
 
         internal static Board Random()
         {
             Board board = new Board();
             for (int fieldNr = 0; fieldNr < 9; fieldNr++)
             {
-                Coordinates coordinates = new Coordinates(fieldNr);
-                board.board[coordinates.X, coordinates.Y] = board.board[coordinates.X, coordinates.Y].Random();
+                board.BoardFields[fieldNr] = board.BoardFields[fieldNr].Random();
             }
 
             return board;
@@ -73,44 +65,53 @@ namespace TicTacToe.GameLogic
             Board board = new Board();
             for (int fieldNr = 0; fieldNr < 9; fieldNr++)
             {
-                Coordinates coordinates = new Coordinates(fieldNr);
-                board.board[coordinates.X, coordinates.Y] = this.board[coordinates.X, coordinates.Y];
+                board.BoardFields[fieldNr] = this.BoardFields[fieldNr];
             }
 
             return board;
         }
 
-        internal List<Player> Reihe(int nr) => ReiheIndexes(nr).Select(idx => this.Get(idx)).ToList();
+        internal List<Player> Reihe(int nr) 
+            => ReiheIndexes(nr).Select(idx => this.Get(idx)).ToList();
 
-        internal List<Player> Spalte(int nr) => SpalteIndexes(nr).Select(idx => this.Get(idx)).ToList();
+        internal List<Player> Spalte(int nr) 
+            => SpalteIndexes(nr).Select(idx => this.Get(idx)).ToList();
 
-        internal List<Player> DiagonaleLIURO() => DiagonaleLIUROIndexes().Select(idx => this.Get(idx)).ToList();
+        internal List<Player> DiagonaleLIURO() 
+            => DiagonaleLIUROIndexes().Select(idx => this.Get(idx)).ToList();
 
-        internal List<Player> DiagonaleLOURU() => DiagonaleLOURUIndexes().Select(idx => this.Get(idx)).ToList();
+        internal List<Player> DiagonaleLOURU() 
+            => DiagonaleLOURUIndexes().Select(idx => this.Get(idx)).ToList();
 
-        internal static List<int> ReiheIndexes(int nr) => new List<int> { 0 + nr * 3, 1 + nr * 3, 2 + nr * 3 };
+        internal static List<int> ReiheIndexes(int nr) 
+            => new List<int> { 0 + nr * 3, 1 + nr * 3, 2 + nr * 3 };
 
-        internal static List<int> SpalteIndexes(int nr) => new List<int> { 6 + nr, 3 + nr, 0 + nr };
+        internal static List<int> SpalteIndexes(int nr) 
+            => new List<int> { 6 + nr, 3 + nr, 0 + nr };
 
-        internal static List<int> DiagonaleLIUROIndexes() => new List<int> { 0, 4, 8 };
+        internal static List<int> DiagonaleLIUROIndexes() 
+            => new List<int> { 0, 4, 8 };
 
-        internal static List<int> DiagonaleLOURUIndexes() => new List<int> { 6, 4, 2, };
+        internal static List<int> DiagonaleLOURUIndexes() 
+            => new List<int> { 6, 4, 2, };
 
-        internal Player Get(int fieldNr) => this.Get(new Coordinates(fieldNr));
+        internal Player Get(int fieldNr) 
+            => this.Get(new Coordinates(fieldNr));
 
-        internal Player Get(Coordinates coordinates) => this.board[coordinates.X, coordinates.Y];
+        internal Player Get(Coordinates coordinates) 
+            => this.BoardFields[coordinates.FieldNr];
 
         internal void Set(int fieldNr, Player playerOrComputer)
-        {
-            Coordinates coordinates = new Coordinates(fieldNr);
-            this.board[coordinates.X, coordinates.Y] = playerOrComputer;
-        }
+            => this.BoardFields[fieldNr] = playerOrComputer;
+        
+        internal void Set(int x, int y, Player playerOrComputer)
+            => this.BoardFields[new Coordinates(x, y).FieldNr] = playerOrComputer;
 
-        internal void Set(int x, int y, Player playerOrComputer) => this.board[x, y] = playerOrComputer;
+        internal bool IsEmpty(int x, int y)
+            => this.BoardFields[new Coordinates(x, y).FieldNr] == Player.None;
 
-        internal bool IsEmpty(int x, int y) => this.board[x, y] == Player.None;
-
-        internal List<Player> Fields() => Enumerable.Range(0, 9).Select(idx => this.Get(idx)).ToList();
+        internal List<Player> Fields() 
+            => Enumerable.Range(0, 9).Select(idx => this.Get(idx)).ToList();
 
         internal List<string> Print()
         {
@@ -161,18 +162,10 @@ namespace TicTacToe.GameLogic
             return Player.None;
         }
 
-        private string GetField(int x, int y) => this.board[x, y].AsString();
+        private string GetField(int x, int y)
+            => this.BoardFields[new Coordinates(x, y).FieldNr].AsString();
 
         private Board()
-        {
-            this.board = new Player[3, 3];
-            for (int x = 0; x < this.board.GetLength(0); x++)
-            {
-                for (int y = 0; y < this.board.GetLength(1); y++)
-                {
-                    this.board[x, y] = Player.None;
-                }
-            }
-        }
+            => this.BoardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
     }
 }

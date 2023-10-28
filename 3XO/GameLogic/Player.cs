@@ -2,7 +2,7 @@
 
 namespace TicTacToe.GameLogic
 {
-    internal enum Player
+    public enum Player
     {
         Unknown,
 

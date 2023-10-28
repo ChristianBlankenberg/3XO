@@ -25,6 +25,11 @@ namespace TicTacToe
             }            
         }
 
+        internal void Debug()
+        {
+            this.game.Debug();
+        }
+
         internal void Test()
         {
             for (int spalte = 0; spalte < 3; spalte++)
