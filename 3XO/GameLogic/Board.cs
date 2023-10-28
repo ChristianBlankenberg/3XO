@@ -8,7 +8,13 @@ namespace TicTacToe.GameLogic
     [Serializable]
     public class Board
     {
-        public List<Player> BoardFields;
+        private List<Player> boardFields;
+
+        public string BoardFieldsString
+        {
+            get => this.ToString();
+            set => this.boardFields = this.FromString(value);
+        }
 
         public string ToString() 
             => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
@@ -20,6 +26,12 @@ namespace TicTacToe.GameLogic
             {
                 this.Set(fieldNr, fields[fieldNr].PlayerFromString());
             }
+        }
+
+        public List<Player> FromString(string boardString)
+        {
+            var fields = boardString.Split(new char[] { ';' });
+            return fields.Select(s => s.PlayerFromString()).ToList();
         }
 
         public static bool operator == (Board a, Board b)
@@ -46,15 +58,19 @@ namespace TicTacToe.GameLogic
             return false;
         }
 
-        internal static Board Empty() 
-            => new Board();
+        internal static Board Empty()
+        { 
+            Board result = new Board();
+            result.boardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+            return result;
+        }
 
         internal static Board Random()
         {
             Board board = new Board();
             for (int fieldNr = 0; fieldNr < 9; fieldNr++)
             {
-                board.BoardFields[fieldNr] = board.BoardFields[fieldNr].Random();
+                board.boardFields[fieldNr] = board.boardFields[fieldNr].Random();
             }
 
             return board;
@@ -62,10 +78,10 @@ namespace TicTacToe.GameLogic
 
         internal Board Copy()
         {
-            Board board = new Board();
+            Board board = Board.Empty();
             for (int fieldNr = 0; fieldNr < 9; fieldNr++)
             {
-                board.BoardFields[fieldNr] = this.BoardFields[fieldNr];
+                board.boardFields[fieldNr] = this.boardFields[fieldNr];
             }
 
             return board;
@@ -99,16 +115,16 @@ namespace TicTacToe.GameLogic
             => this.Get(new Coordinates(fieldNr));
 
         internal Player Get(Coordinates coordinates) 
-            => this.BoardFields[coordinates.FieldNr];
+            => this.boardFields[coordinates.FieldNr];
 
         internal void Set(int fieldNr, Player playerOrComputer)
-            => this.BoardFields[fieldNr] = playerOrComputer;
+            => this.boardFields[fieldNr] = playerOrComputer;
         
         internal void Set(int x, int y, Player playerOrComputer)
-            => this.BoardFields[new Coordinates(x, y).FieldNr] = playerOrComputer;
+            => this.boardFields[new Coordinates(x, y).FieldNr] = playerOrComputer;
 
         internal bool IsEmpty(int x, int y)
-            => this.BoardFields[new Coordinates(x, y).FieldNr] == Player.None;
+            => this.boardFields[new Coordinates(x, y).FieldNr] == Player.None;
 
         internal List<Player> Fields() 
             => Enumerable.Range(0, 9).Select(idx => this.Get(idx)).ToList();
@@ -163,9 +179,11 @@ namespace TicTacToe.GameLogic
         }
 
         private string GetField(int x, int y)
-            => this.BoardFields[new Coordinates(x, y).FieldNr].AsString();
+            => this.boardFields[new Coordinates(x, y).FieldNr].AsString();
 
         private Board()
-            => this.BoardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+        {
+            //=> this.BoardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+        }
     }
 }

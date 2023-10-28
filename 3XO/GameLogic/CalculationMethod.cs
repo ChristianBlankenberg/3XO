@@ -10,6 +10,8 @@
 
         Random,
 
-        NeuronalNet
+        NeuronalNet,
+
+        QValues
     }
 }

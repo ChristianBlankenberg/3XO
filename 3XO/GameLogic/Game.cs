@@ -61,5 +61,7 @@ namespace TicTacToe.GameLogic
         {
 
         }
+
+        internal Board GetBoard() => this.board;
     }
 }

@@ -2,7 +2,11 @@
 namespace TicTacToe
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Xml.Serialization;
+    using global::GameLogic;
     using TicTacToe.GameLogic;
 
     internal class ConsoleGame
@@ -17,12 +21,12 @@ namespace TicTacToe
         internal void PrintBoard()
         {
             Console.Clear();
-           
+
             var output = this.game.PrintBoard();
             foreach (var line in output)
             {
                 Console.WriteLine(line);
-            }            
+            }
         }
 
         internal void Debug()
@@ -86,18 +90,20 @@ namespace TicTacToe
 
             while (!this.game.Over())
             {
-
-                this.Set(Player.Player, CalculationMethod.Console);
-                this.Set(Player.Computer, CalculationMethod.NeuronalNet);
+                this.Set(Player.Player, CalculationMethod.Console, this.game.GetBoard());
+                if (!this.game.Over())
+                {
+                    this.Set(Player.Computer, CalculationMethod.QValues, this.game.GetBoard());
+                }
             }
         }
 
-        private void Set(Player playerOrComputer, CalculationMethod calculationMethod)
+        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, Board board)
         {
             Coordinates coordinates;
             do
             {
-                coordinates = this.GetCoordinates(playerOrComputer, calculationMethod);
+                coordinates = this.GetCoordinates(playerOrComputer, calculationMethod, board);
             }
 
             while (!this.game.IsEmpty(coordinates));
@@ -105,7 +111,7 @@ namespace TicTacToe
             this.PrintBoard();
         }
 
-        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod)
+        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, Board board)
         {
             switch (calculationMethod)
             {
@@ -117,9 +123,70 @@ namespace TicTacToe
                     return this.GetRandomCoordinates();
                 case CalculationMethod.NeuronalNet:
                     return this.GetCoordinatesFromNeuronalNet();
+                case CalculationMethod.QValues:
+                    return this.GetCoordinatesQValues(playerOrComputer, board);
             }
 
             throw new NotImplementedException();
+        }
+
+        private List<QualityDescription> GetQualityDexcriptionList(string filename)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<QualityDescription>));
+
+            // Declare an object variable of the type to be deserialized.
+            using (Stream reader = new FileStream(filename, FileMode.Open))
+            {
+                // Call the Deserialize method to restore the object's state.
+                return (List<QualityDescription>)serializer.Deserialize(reader);
+            }
+        }
+
+        List<QualityDescription> playerBoardsAndQValues = null;
+        List<QualityDescription> computerBoardsAndQValues = null;
+        private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board board)
+        {
+            List<QualityDescription> qValues = null;
+
+            if (playerOrComputer == Player.Player)
+            {
+                if (this.playerBoardsAndQValues == null)
+                {
+                    this.playerBoardsAndQValues = this.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
+                }
+
+                qValues = this.playerBoardsAndQValues;
+            }
+            else if (playerOrComputer == Player.Computer)
+            {
+                if (this.computerBoardsAndQValues == null)
+                {
+                    this.computerBoardsAndQValues = this.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+                }
+
+                qValues = this.computerBoardsAndQValues;
+            }
+
+            var previewBoard = qValues.FirstOrDefault(bq => bq.Board == board);
+            if (previewBoard == null)
+            {
+                throw new ArithmeticException();
+            }
+
+            double maxValue = -double.MaxValue;
+            int maxIdx = -1;
+
+            var fields = board.Fields();
+            for (int idx=0;idx<fields.Count;idx++)
+            {
+                if (fields[idx] == Player.None && previewBoard.QualityMatrix[idx] > maxValue)
+                {
+                    maxValue = previewBoard.QualityMatrix[idx];
+                    maxIdx = idx;
+                }
+            }
+
+            return new Coordinates(maxIdx);
         }
 
         private Coordinates GetRandomCoordinates()
@@ -150,9 +217,9 @@ namespace TicTacToe
         }
 
         private bool Is0(ConsoleKeyInfo consoleKeyInfo) => consoleKeyInfo.Key == ConsoleKey.D0 || consoleKeyInfo.Key == ConsoleKey.NumPad0;
-        
+
         private bool Is1(ConsoleKeyInfo consoleKeyInfo) => consoleKeyInfo.Key == ConsoleKey.D1 || consoleKeyInfo.Key == ConsoleKey.NumPad1;
-        
+
         private bool Is2(ConsoleKeyInfo consoleKeyInfo) => consoleKeyInfo.Key == ConsoleKey.D2 || consoleKeyInfo.Key == ConsoleKey.NumPad2;
 
         private int GetNr(ConsoleKeyInfo consoleKeyInfo)

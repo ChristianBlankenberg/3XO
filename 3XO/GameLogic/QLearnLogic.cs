@@ -58,11 +58,11 @@ namespace GameLogic
         {
             List<QualityDescription> boardsAndQValues = null;
 
-            if (boardFieldPlayer.Item3 == Player.Player)
+            if (boardFieldPlayer.Item3 == this.Opponent(Player.Player))
             {
                 boardsAndQValues = this.playerBoardsAndQValues;
             }
-            else if (boardFieldPlayer.Item3 == Player.Computer)
+            else if (boardFieldPlayer.Item3 == this.Opponent(Player.Computer))
             {
                 boardsAndQValues = this.computerBoardsAndQValues;
             }

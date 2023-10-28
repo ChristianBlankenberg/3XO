@@ -15,10 +15,6 @@ namespace TicTacToe
             //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
             //consoleGame.Debug();
 
-            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
-            //consoleGame.Test();
-            //consoleGame.Run();
-
             //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
             //gameNeuronalNet.Init();
             //var outputs = gameNeuronalNet.Test();
@@ -31,10 +27,15 @@ namespace TicTacToe
 
             //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
             //gameNeuronalNet.Train();
+            
+            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            consoleGame.Test();
+            consoleGame.Run();
 
-            QLearnLogic qLearnLogic = new QLearnLogic();
-            qLearnLogic.QLearn();
+            Console.ReadLine();
 
+            //QLearnLogic qLearnLogic = new QLearnLogic();
+            //qLearnLogic.QLearn();
         }
     }
 }
