@@ -21,6 +21,7 @@ namespace TicTacToe.GameLogic
 
         public Board(string boardString) : this()
         {
+            this.boardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
             var fields = boardString.Split(new char[] { ';' });
             for(int fieldNr = 0;fieldNr < fields.Length; fieldNr++)
             {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -14,13 +15,16 @@ namespace GameLogic
         //        Dictionary<Board, int, Player>
         Stack<(Board, int, Player)> boardsFieldPlayer;
 
-        internal void QLearn()
+        //		board.ToString()	" ; ; ; ;X;X; ; ;O"	string
+
+
+        internal void QLearn(Board board, Player player)
         {
             this.boardsFieldPlayer = new Stack<(Board, int, Player)>();
             this.playerBoardsAndQValues = new List<QualityDescription>();
             this.computerBoardsAndQValues = new List<QualityDescription>();
 
-            this.GetQValue(Board.Empty(), Player.Player, -1, 0);
+            this.GetQValue(board, player, -1, 0);
 
             this.SaveResults(this.playerBoardsAndQValues, "playerBoardsAndQValues.xml");
             this.SaveResults(this.computerBoardsAndQValues, "computerBoardsAndQValues.xml");
@@ -33,17 +37,70 @@ namespace GameLogic
             xmlSerializer.Serialize(streamWriter, qualityDescriptionList);
             streamWriter.Close();
         }
-    
+
+        internal void Test()
+        {
+            var qualityDescription = this.GetQValuesList(Player.Computer);
+            this.IterateAndTest(Board.Empty(), Player.Player, 0, 0, qualityDescription,
+                (board, player, qDescription) =>
+                { 
+                    if (player == Player.Player)
+                    {
+                        if (qDescription.FindIndex(b => b.Board == board) == -1)
+                        {
+                            File.AppendAllText("ComputerNoBoards.txt",$"{board.ToString()}{Environment.NewLine}");
+                        }
+                    }
+                });
+        }
+
+        private void IterateAndTest(Board board, Player player, int setFieldNr, int layerIdx, List<QualityDescription> qualityDescription, Action<Board, Player, List<QualityDescription>> checkAction)
+        {
+            if (board.Full() || board.Winner() != Player.None)
+            {
+            }
+            else
+            {
+                for (int fieldNr = 0; fieldNr < 9; fieldNr++)
+                {
+                    Board newBoard = board.Copy();
+                    Coordinates coordinates = new Coordinates(fieldNr);
+                    if (newBoard.Get(fieldNr) == Player.None)
+                    {
+                        newBoard.Set(fieldNr, player);
+                        checkAction(newBoard, player, qualityDescription);
+                        this.IterateAndTest(newBoard, this.Opponent(player), fieldNr, layerIdx + 1, qualityDescription, checkAction);
+                    }
+                }
+            }
+        }
+
+
+        private List<QualityDescription> GetQValuesList(Player playerOrComputer)
+        {
+            if (playerOrComputer == Player.Player)
+            {
+                return QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
+            }
+            else if (playerOrComputer == Player.Computer)
+            {
+                return QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+            }
+
+            return null;
+        }
+
         private void CheckReward(Board board, Player player)
         {
             if (board.Winner() != Player.None)
             {
                 double qValue = 1;
                 var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
-                
-                for(int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
+
+                for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
                 {
-                    var boardAndQValues = this.GetBoardAndQValues(boardsFieldPlayerList[boardsFieldPlayerListIdx+1]);
+                    beide ...
+                    var boardAndQValues = this.GetBoardAndQValues(boardsFieldPlayerList[boardsFieldPlayerListIdx + 1]);
                     boardAndQValues.QualityMatrix[boardsFieldPlayerList[boardsFieldPlayerListIdx].Item2] += qValue;
                     qValue *= -0.9;
                 }
@@ -81,7 +138,7 @@ namespace GameLogic
 
         private void GetQValue(Board board, Player player, int setFieldNr, int layerIdx)
         {
-            boardsFieldPlayer.Push((board, setFieldNr , this.Opponent(player)));
+            boardsFieldPlayer.Push((board, setFieldNr, this.Opponent(player)));
             if (board.Full() || board.Winner() != Player.None)
             {
                 this.CheckReward(board, player);

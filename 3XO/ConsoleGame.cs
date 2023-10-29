@@ -130,18 +130,6 @@ namespace TicTacToe
             throw new NotImplementedException();
         }
 
-        private List<QualityDescription> GetQualityDexcriptionList(string filename)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<QualityDescription>));
-
-            // Declare an object variable of the type to be deserialized.
-            using (Stream reader = new FileStream(filename, FileMode.Open))
-            {
-                // Call the Deserialize method to restore the object's state.
-                return (List<QualityDescription>)serializer.Deserialize(reader);
-            }
-        }
-
         List<QualityDescription> playerBoardsAndQValues = null;
         List<QualityDescription> computerBoardsAndQValues = null;
         private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board board)
@@ -152,7 +140,7 @@ namespace TicTacToe
             {
                 if (this.playerBoardsAndQValues == null)
                 {
-                    this.playerBoardsAndQValues = this.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
+                    this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
                 }
 
                 qValues = this.playerBoardsAndQValues;
@@ -161,7 +149,7 @@ namespace TicTacToe
             {
                 if (this.computerBoardsAndQValues == null)
                 {
-                    this.computerBoardsAndQValues = this.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+                    this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
                 }
 
                 qValues = this.computerBoardsAndQValues;
