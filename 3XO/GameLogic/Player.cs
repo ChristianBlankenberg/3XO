@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace TicTacToe.GameLogic
+﻿namespace TicTacToe.GameLogic
 {
+    using System;
+    
     public enum Player
     {
         Unknown,

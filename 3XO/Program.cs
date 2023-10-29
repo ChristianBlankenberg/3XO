@@ -12,30 +12,23 @@ namespace TicTacToe
     {
         static void Main(string[] args)
         {
-            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
-            //consoleGame.Debug();
+            RunGame();
+            //QLearn(new Board(" ; ; ; ;X;X; ; ;O"), Player.Player);
+            //QLearn(Board.Empty(), Player.Computer);
 
-            //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
-            //gameNeuronalNet.Init();
-            //var outputs = gameNeuronalNet.Test();
-            //foreach(var output in outputs)
-            //{
-            //    Console.WriteLine(output);
-            //}
+        }
 
-            //Console.ReadKey();
-
-            //GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
-            //gameNeuronalNet.Train();
-
-            //ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
-            //consoleGame.Test();
-            //consoleGame.Run();
-
-            //Console.ReadLine();
-
+        private static void QLearn(Board board, Player player)
+        {
             QLearnLogic qLearnLogic = new QLearnLogic();
-            qLearnLogic.QLearn(new Board(" ; ; ; ;X;X; ; ;O"), Player.Computer);
+            qLearnLogic.QLearn(board, player);
+        }
+
+        private static void RunGame()
+        {
+            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            consoleGame.Test();
+            consoleGame.Run();
         }
     }
 }

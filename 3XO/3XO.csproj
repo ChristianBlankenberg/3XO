@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ConsoleGame.cs" />
     <Compile Include="GameLogic\Board.cs" />
+    <Compile Include="GameLogic\BoardFieldPlayer.cs" />
     <Compile Include="GameLogic\CalculationMethod.cs" />
     <Compile Include="GameLogic\Coordinates.cs" />
     <Compile Include="GameLogic\Game.cs" />
