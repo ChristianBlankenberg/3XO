@@ -20,5 +20,7 @@ namespace GameLogic
         public int FieldNr { get; }
 
         public Player Player { get; }
+
+        public double QValue { get; set; }
     }
 }

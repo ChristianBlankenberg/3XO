@@ -19,7 +19,10 @@ namespace GameLogic
             this.playerBoardsAndQValues = new List<QualityDescription>();
             this.computerBoardsAndQValues = new List<QualityDescription>();
 
-            this.GetQValue(board, player, -1, 0);
+            this.AddQValue(board, player, -1, 0);
+            //this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
+            //this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+            this.AddBlockValues(board, player, -1, 0);
 
             this.SaveResults(this.playerBoardsAndQValues, "playerBoardsAndQValues.xml");
             this.SaveResults(this.computerBoardsAndQValues, "computerBoardsAndQValues.xml");
@@ -92,7 +95,6 @@ namespace GameLogic
 #if DODEBUG
                 bool debug = board.Winner() != Player.None && board.Get(3) != Player.None;
 #endif
-                double qValue = 1;
                 Player boardWinner = board.Winner();
                 var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
 
@@ -109,14 +111,22 @@ namespace GameLogic
                 }
 #endif
 
+                double qValue = 1;
+                for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
+                {
+                    boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue = qValue;
+                    qValue *= 0.9;
+                }
+
                 for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
                 {
                     var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
                     int fieldNr = boardPlayerField.FieldNr;
                     var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardPlayerField);
+                    double q = boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue;
 
                     double factor = boardWinner == boardPlayerField.Player ? 1 : -1;
-                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += factor * qValue;
+                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += factor * q;
 
 #if DODEBUG
                     if (debug && fieldNr == 3)
@@ -131,6 +141,8 @@ namespace GameLogic
             else
             {
                 // no winner -> 0 reward -> no need to change q-values
+                var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
+                var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardsFieldPlayerList[0]);
             }
         }
 
@@ -176,21 +188,12 @@ namespace GameLogic
 
         private Player Opponent(Player player) => player == Player.Player ? Player.Computer : Player.Player;
 
-        private void GetQValue(Board board, Player playerSet, int setFieldNr, int layerIdx)
+        private void AddQValue(Board board, Player playerSet, int setFieldNr, int layerIdx)
         {
             boardsFieldPlayer.Push(new BoardFieldPlayer(board, setFieldNr, playerSet));
             if (board.Full() || board.Winner() != Player.None)
             {
                 this.CheckReward(board, playerSet);
-
-                //var lines = board.Print();
-
-                //foreach (var line in lines)
-                //{
-                //    File.AppendAllText("3XO.txt", $"{line}{Environment.NewLine}");
-                //}
-
-                //File.AppendAllText("3XO.txt", $"{Environment.NewLine}");
             }
             else
             {
@@ -201,11 +204,60 @@ namespace GameLogic
                     if (newBoard.Get(fieldNr) == Player.None)
                     {
                         newBoard.Set(fieldNr, this.Opponent(playerSet));
-                        this.GetQValue(newBoard, this.Opponent(playerSet), fieldNr, layerIdx + 1);
+                        this.AddQValue(newBoard, this.Opponent(playerSet), fieldNr, layerIdx + 1);
                         boardsFieldPlayer.Pop();
                     }
                 }
             }
+        }
+
+        private void AddBlockValues(Board board, Player playerSet, int setFieldNr, int layerIdx)
+        {
+            if (board.Full() || board.Winner() != Player.None)
+            {
+            }
+            else
+            {
+                var opponent = this.Opponent(playerSet);
+
+                for (int fieldNr = 0; fieldNr < 9; fieldNr++)
+                {
+                    Board newBoard = board.Copy();
+                    Coordinates coordinates = new Coordinates(fieldNr);
+                    if (newBoard.Get(fieldNr) == Player.None)
+                    {
+                        newBoard.Set(fieldNr, opponent);
+
+                        var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
+                        if (addBlockingValueReward > 0)
+                        {
+                            List<QualityDescription> boardsAndQValues = opponent == Player.Player ? playerBoardsAndQValues : computerBoardsAndQValues;
+                            var boardAndQValue = boardsAndQValues.FirstOrDefault(b => b.Board == board);
+                            if (boardAndQValue == null)
+                            {
+                                throw (new ArgumentException(nameof(boardAndQValue)));
+                            }
+
+                            boardAndQValue.QualityMatrix[fieldNr] += addBlockingValueReward;
+                        }
+                     
+                        this.AddBlockValues(newBoard, opponent, fieldNr, layerIdx + 1);
+                    }
+                }
+            }
+        }
+
+        private double GetAddBlockingValueReward(Board newBoard, int fieldNr, Player playerSet)
+        {
+            double result = 0;
+            newBoard.Set(fieldNr, playerSet);
+            if (newBoard.Winner() == playerSet)
+            {
+                result = 100;
+            }
+
+            newBoard.Set(fieldNr, this.Opponent(playerSet));
+            return result;
         }
     }
 }
