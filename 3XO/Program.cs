@@ -18,7 +18,7 @@ namespace TicTacToe
         private static void QLearn(Board<PlayerComputer> board, Player player)
         {
             QLearnLogic qLearnLogic = new QLearnLogic((s) => Console.WriteLine(s));
-            qLearnLogic.QLearn(board, player);
+            qLearnLogic.QLearn(board, new PlayerComputer(player));
         }
 
         private static void RunGame()

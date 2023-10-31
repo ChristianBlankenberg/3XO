@@ -19,7 +19,7 @@ namespace GameLogic
             this.logAction = logAction;
         }
 
-        internal void QLearn(Board<PlayerComputer> board, Player player)
+        internal void QLearn(Board<PlayerComputer> board, PlayerComputer player)
         {
             this.boardsFieldPlayer = new Stack<BoardFieldPlayer>();
             this.playerBoardsAndQValues = new List<QualityDescription>();
@@ -100,7 +100,7 @@ namespace GameLogic
             return null;
         }
 
-        private void CheckReward(Board<PlayerComputer> board, Player player)
+        private void CheckReward(Board<PlayerComputer> board, PlayerComputer player)
         {
             if (!board.Winner().IsNone())
             {
@@ -137,7 +137,7 @@ namespace GameLogic
                     var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardPlayerField);
                     double q = boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue;
 
-                    double factor = boardWinner.Equals(new PlayerComputer(boardPlayerField.Player)) ? 1 : -1;
+                    double factor = boardWinner.Equals(player) ? 1 : -1;
                     boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += factor * q;
 
 #if DODEBUG
@@ -172,11 +172,11 @@ namespace GameLogic
         {
             List<QualityDescription> boardsAndQValues = null;
 
-            if (boardFieldPlayer.Player == Player.Player)
+            if (boardFieldPlayer.Player.IsA())
             {
                 boardsAndQValues = this.playerBoardsAndQValues;
             }
-            else if (boardFieldPlayer.Player == Player.Computer)
+            else if (boardFieldPlayer.Player.IsB())
             {
                 boardsAndQValues = this.computerBoardsAndQValues;
             }
@@ -200,7 +200,7 @@ namespace GameLogic
 
         private Player Opponent(Player player) => player == Player.Player ? Player.Computer : Player.Player;
 
-        private void AddQValue(Board<PlayerComputer> board, Player playerSet, int setFieldNr, int layerIdx)
+        private void AddQValue(Board<PlayerComputer> board, PlayerComputer playerSet, int setFieldNr, int layerIdx)
         {
             boardsFieldPlayer.Push(new BoardFieldPlayer(board, setFieldNr, playerSet));
             if (board.Full() || !board.Winner().IsNone())
@@ -226,22 +226,22 @@ namespace GameLogic
                     Coordinates coordinates = new Coordinates(fieldNr);
                     if (newBoard.Get(fieldNr).IsNone())
                     {
-                        newBoard.Set(fieldNr, new PlayerComputer(this.Opponent(playerSet)));
-                        this.AddQValue(newBoard, this.Opponent(playerSet), fieldNr, layerIdx + 1);
+                        newBoard.Set(fieldNr, playerSet.Opponent() as PlayerComputer);
+                        this.AddQValue(newBoard, playerSet.Opponent() as PlayerComputer, fieldNr, layerIdx + 1);
                         boardsFieldPlayer.Pop();
                     }
                 }
             }
         }
 
-        private void AddBlockValues(Board<PlayerComputer> board, Player playerSet, int setFieldNr, int layerIdx)
+        private void AddBlockValues(Board<PlayerComputer> board, PlayerComputer playerSet, int setFieldNr, int layerIdx)
         {
             if (board.Full() || !board.Winner().IsNone())
             {
             }
             else
             {
-                var opponent = this.Opponent(playerSet);
+                var opponent = playerSet.Opponent() as PlayerComputer;
 
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
@@ -249,12 +249,12 @@ namespace GameLogic
                     Coordinates coordinates = new Coordinates(fieldNr);
                     if (newBoard.Get(fieldNr).IsNone())
                     {
-                        newBoard.Set(fieldNr, new PlayerComputer(opponent));
+                        newBoard.Set(fieldNr, opponent);
 
                         var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
                         if (addBlockingValueReward > 0)
                         {
-                            List<QualityDescription> boardsAndQValues = opponent == Player.Player ? playerBoardsAndQValues : computerBoardsAndQValues;
+                            List<QualityDescription> boardsAndQValues = opponent.IsA() ? playerBoardsAndQValues : computerBoardsAndQValues;
                             var boardAndQValue = boardsAndQValues.FirstOrDefault(b => b.Board == board);
                             if (boardAndQValue == null)
                             {
@@ -270,16 +270,16 @@ namespace GameLogic
             }
         }
 
-        private double GetAddBlockingValueReward(Board<PlayerComputer> newBoard, int fieldNr, Player playerSet)
+        private double GetAddBlockingValueReward(Board<PlayerComputer> newBoard, int fieldNr, PlayerComputer playerSet)
         {
             double result = 0;
-            newBoard.Set(fieldNr, new PlayerComputer(playerSet));
+            newBoard.Set(fieldNr, playerSet);
             if (newBoard.Winner().Equals(playerSet))
             {
                 result = 100;
             }
 
-            newBoard.Set(fieldNr, new PlayerComputer(this.Opponent(playerSet)));
+            newBoard.Set(fieldNr, playerSet.Opponent() as PlayerComputer);
             return result;
         }
 

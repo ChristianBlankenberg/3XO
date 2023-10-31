@@ -7,8 +7,8 @@ namespace GameLogic
     {
         public BoardFieldPlayer(
             Board<PlayerComputer> board, 
-            int fieldNr, 
-            Player player)
+            int fieldNr,
+            PlayerComputer player)
         {
             this.Board = board;
             this.FieldNr = fieldNr;
@@ -19,7 +19,7 @@ namespace GameLogic
 
         public int FieldNr { get; }
 
-        public Player Player { get; }
+        public PlayerComputer Player { get; }
 
         public double QValue { get; set; }
     }
