@@ -12,6 +12,12 @@ namespace GameLogic
         List<QualityDescription> playerBoardsAndQValues;
         List<QualityDescription> computerBoardsAndQValues;
         Stack<BoardFieldPlayer> boardsFieldPlayer;
+        private readonly Action<string> logAction;
+
+        public QLearnLogic(Action<string> logAction)
+        {
+            this.logAction = logAction;
+        }
 
         internal void QLearn(Board board, Player player)
         {
@@ -19,11 +25,15 @@ namespace GameLogic
             this.playerBoardsAndQValues = new List<QualityDescription>();
             this.computerBoardsAndQValues = new List<QualityDescription>();
 
+            this.Log("Add Q Values");
             this.AddQValue(board, player, -1, 0);
             //this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
             //this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+
+            this.Log("Add Blocking Values");
             this.AddBlockValues(board, player, -1, 0);
 
+            this.Log("Save Results ");
             this.SaveResults(this.playerBoardsAndQValues, "playerBoardsAndQValues.xml");
             this.SaveResults(this.computerBoardsAndQValues, "computerBoardsAndQValues.xml");
         }
@@ -67,7 +77,7 @@ namespace GameLogic
                     {
                         newBoard.Set(fieldNr, player);
                         checkAction(newBoard, player, qualityDescription);
-                        this.IterateAndTest(newBoard, this.Opponent(player), fieldNr, layerIdx + 1, qualityDescription, checkAction);
+                        this.IterateAndTest(newBoard, player.Opponent(), fieldNr, layerIdx + 1, qualityDescription, checkAction);
                     }
                 }
             }
@@ -186,8 +196,6 @@ namespace GameLogic
             return boardsAndQValues[indexOfBoard];
         }
 
-        private Player Opponent(Player player) => player == Player.Player ? Player.Computer : Player.Player;
-
         private void AddQValue(Board board, Player playerSet, int setFieldNr, int layerIdx)
         {
             boardsFieldPlayer.Push(new BoardFieldPlayer(board, setFieldNr, playerSet));
@@ -199,15 +207,31 @@ namespace GameLogic
             {
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
+                    this.LogCalcIndex(layerIdx, fieldNr);
+
                     Board newBoard = board.Copy();
                     Coordinates coordinates = new Coordinates(fieldNr);
                     if (newBoard.Get(fieldNr) == Player.None)
                     {
-                        newBoard.Set(fieldNr, this.Opponent(playerSet));
-                        this.AddQValue(newBoard, this.Opponent(playerSet), fieldNr, layerIdx + 1);
+                        newBoard.Set(fieldNr, playerSet.Opponent());
+                        this.AddQValue(newBoard, playerSet.Opponent(), fieldNr, layerIdx + 1);
                         boardsFieldPlayer.Pop();
                     }
                 }
+            }
+        }
+
+        private void LogCalcIndex(int layerIdx, int fieldNr)
+        {
+            if (layerIdx < 3)
+            {
+                string ins = string.Empty;
+                for (int idx = 0; idx < layerIdx; idx++)
+                {
+                    ins += " ";
+                }
+
+                this.Log($"{ins}Calculate field {fieldNr} at layer {layerIdx}");
             }
         }
 
@@ -218,10 +242,12 @@ namespace GameLogic
             }
             else
             {
-                var opponent = this.Opponent(playerSet);
+                var opponent = playerSet.Opponent();
 
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
+                    this.LogCalcIndex(layerIdx, fieldNr);
+
                     Board newBoard = board.Copy();
                     Coordinates coordinates = new Coordinates(fieldNr);
                     if (newBoard.Get(fieldNr) == Player.None)
@@ -256,8 +282,13 @@ namespace GameLogic
                 result = 100;
             }
 
-            newBoard.Set(fieldNr, this.Opponent(playerSet));
+            newBoard.Set(fieldNr, playerSet.Opponent());
             return result;
+        }
+
+        private void Log(string content)
+        {
+            this.logAction?.Invoke(content);
         }
     }
 }

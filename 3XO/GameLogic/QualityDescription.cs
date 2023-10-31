@@ -34,7 +34,6 @@ namespace GameLogic
             }
         }
 
-
         public Board Board { get; set; }
 
         public List<double> QualityMatrix { get; set; }

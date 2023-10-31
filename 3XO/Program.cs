@@ -15,11 +15,12 @@ namespace TicTacToe
             RunGame();
             //QLearn(new Board(" ; ; ; ;X;X; ; ;O"), Player.Player);
             //QLearn(Board.Empty(), Player.Computer);
+            Console.ReadLine();
         }
 
         private static void QLearn(Board board, Player player)
         {
-            QLearnLogic qLearnLogic = new QLearnLogic();
+            QLearnLogic qLearnLogic = new QLearnLogic((s) => Console.WriteLine(s));
             qLearnLogic.QLearn(board, player);
         }
 

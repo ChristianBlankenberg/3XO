@@ -10,10 +10,24 @@ namespace TicTacToe.GameLogic
     {
         private List<Player> boardFields;
 
+        private int? hashCode = null;
+        public override int GetHashCode()
+        {
+            if (!this.hashCode.HasValue)
+            {
+                this.UpdateValues();
+            }
+
+            return this.hashCode.Value;
+        }
+
         public string BoardFieldsString
         {
             get => this.ToString();
-            set => this.boardFields = this.FromString(value);
+            set
+            {
+                this.SetBoardFields(this.FromString(value));
+            }
         }
 
         public string ToString() 
@@ -21,12 +35,37 @@ namespace TicTacToe.GameLogic
 
         public Board(string boardString) : this()
         {
-            this.boardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+            this.SetBoardFields(Enumerable.Range(0, 9).Select(i => Player.None).ToList());
             var fields = boardString.Split(new char[] { ';' });
             for(int fieldNr = 0;fieldNr < fields.Length; fieldNr++)
             {
                 this.Set(fieldNr, fields[fieldNr].PlayerFromString());
             }
+        }
+
+        private void SetBoardFields(List<Player> players)
+        {
+            this.boardFields = players;
+            this.UpdateValues();
+        }
+
+        private void UpdateValues()
+        { 
+            this.hashCode = this.CalculateHashCode();
+        }
+
+        private int CalculateHashCode()
+        {
+            int result = 0;
+
+            int xbase = 1;
+            for (int x = 0; x < this.boardFields.Count; x++)
+            {
+                result += xbase * this.boardFields[x].AsInt();
+                xbase *= 3;
+            }
+
+            return result;
         }
 
         public List<Player> FromString(string boardString)
@@ -45,15 +84,16 @@ namespace TicTacToe.GameLogic
         {
             if (o != null && o is Board board)
             {
-                for (int fieldNr = 0; fieldNr < 9; fieldNr++)
-                {
-                    if (this.Get(fieldNr) != board.Get(fieldNr))
-                    {
-                        return false;
-                    }
-                }
+                //for (int fieldNr = 0; fieldNr < 9; fieldNr++)
+                //{
+                //    if (this.Get(fieldNr) != board.Get(fieldNr))
+                //    {
+                //        return false;
+                //    }
+                //}
 
-                return true;
+                //return true;
+                return this.hashCode == board.hashCode;
             }
 
             return false;
@@ -62,17 +102,16 @@ namespace TicTacToe.GameLogic
         internal static Board Empty()
         { 
             Board result = new Board();
-            result.boardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+            result.SetBoardFields(Enumerable.Range(0, 9).Select(i => Player.None).ToList());
             return result;
         }
 
         internal static Board Random()
         {
             Board board = new Board();
-            for (int fieldNr = 0; fieldNr < 9; fieldNr++)
-            {
-                board.boardFields[fieldNr] = board.boardFields[fieldNr].Random();
-            }
+            var list = Enumerable.Range(0, 9).Select(x => Player.None).ToList();
+            list.ForEach(p => p.Random());
+            board.SetBoardFields(list);
 
             return board;
         }
@@ -80,11 +119,7 @@ namespace TicTacToe.GameLogic
         internal Board Copy()
         {
             Board board = Board.Empty();
-            for (int fieldNr = 0; fieldNr < 9; fieldNr++)
-            {
-                board.boardFields[fieldNr] = this.boardFields[fieldNr];
-            }
-
+            board.SetBoardFields(new List<Player>(this.boardFields));
             return board;
         }
 
@@ -119,10 +154,16 @@ namespace TicTacToe.GameLogic
             => this.boardFields[coordinates.FieldNr];
 
         internal void Set(int fieldNr, Player playerOrComputer)
-            => this.boardFields[fieldNr] = playerOrComputer;
-        
+        {
+            this.boardFields[fieldNr] = playerOrComputer;
+            this.UpdateValues();
+        }
+
         internal void Set(int x, int y, Player playerOrComputer)
-            => this.boardFields[new Coordinates(x, y).FieldNr] = playerOrComputer;
+        {
+            this.boardFields[new Coordinates(x, y).FieldNr] = playerOrComputer;
+            this.UpdateValues();
+        }
 
         internal bool IsEmpty(int x, int y)
             => this.boardFields[new Coordinates(x, y).FieldNr] == Player.None;
