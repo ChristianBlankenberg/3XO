@@ -9,8 +9,10 @@ namespace GameLogic
 {
     internal class QLearnLogic
     {
-        List<QualityDescription> playerBoardsAndQValues;
-        List<QualityDescription> computerBoardsAndQValues;
+        //List<QualityDescription> playerBoardsAndQValues;
+        //List<QualityDescription> computerBoardsAndQValues;
+        List<QualityDescription> boardsAndQValues;
+
         Stack<BoardFieldPlayer> boardsFieldPlayer;
         private readonly Action<string> logAction;
 
@@ -22,8 +24,7 @@ namespace GameLogic
         internal void QLearn(Board board, Player player)
         {
             this.boardsFieldPlayer = new Stack<BoardFieldPlayer>();
-            this.playerBoardsAndQValues = new List<QualityDescription>();
-            this.computerBoardsAndQValues = new List<QualityDescription>();
+            this.boardsAndQValues = new List<QualityDescription>();
 
             this.Log("Add Q Values");
             this.AddQValue(board, player, -1, 0);
@@ -34,8 +35,7 @@ namespace GameLogic
             this.AddBlockValues(board, player, -1, 0);
 
             this.Log("Save Results ");
-            this.SaveResults(this.playerBoardsAndQValues, "playerBoardsAndQValues.xml");
-            this.SaveResults(this.computerBoardsAndQValues, "computerBoardsAndQValues.xml");
+            this.SaveResults(this.boardsAndQValues, "boardsAndQValues.xml");
         }
 
         private void SaveResults(List<QualityDescription> qualityDescriptionList, string fileName)
@@ -100,8 +100,6 @@ namespace GameLogic
 
         private void CheckReward(Board board, Player player)
         {
-            if (board.Winner() != Player.None)
-            {
 #if DODEBUG
                 bool debug = board.Winner() != Player.None && board.Get(3) != Player.None;
 #endif
@@ -121,7 +119,7 @@ namespace GameLogic
                 }
 #endif
 
-                double qValue = 1;
+                double qValue = boardWinner != Player.None ? 1 : 0;
                 for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
                 {
                     boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue = qValue;
@@ -147,13 +145,6 @@ namespace GameLogic
 #endif
                     qValue *= 0.9;
                 }
-            }
-            else
-            {
-                // no winner -> 0 reward -> no need to change q-values
-                var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
-                var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardsFieldPlayerList[0]);
-            }
         }
 
         private void Debug(Board board, Player player, int fieldNr, double qValue, string comment)
@@ -168,29 +159,15 @@ namespace GameLogic
 
         private QualityDescription GetPlayerOrComputerBoardAndQValues(BoardFieldPlayer boardFieldPlayer)
         {
-            List<QualityDescription> boardsAndQValues = null;
-
-            if (boardFieldPlayer.Player == Player.Player)
-            {
-                boardsAndQValues = this.playerBoardsAndQValues;
-            }
-            else if (boardFieldPlayer.Player == Player.Computer)
-            {
-                boardsAndQValues = this.computerBoardsAndQValues;
-            }
-            else
-            {
-                throw new ArgumentException(nameof(boardFieldPlayer.Player));
-            }
 
             var previousBoard = boardFieldPlayer.Board.Copy();
             previousBoard.Set(boardFieldPlayer.FieldNr, Player.None);
 
-            int indexOfBoard = boardsAndQValues.FindIndex(bq => bq.Board == previousBoard);
+            int indexOfBoard = this.boardsAndQValues.FindIndex(bq => bq.Board == previousBoard);
             if (indexOfBoard == -1)
             {
-                boardsAndQValues.Add(new QualityDescription(previousBoard));
-                indexOfBoard = boardsAndQValues.Count - 1;
+                this.boardsAndQValues.Add(new QualityDescription(previousBoard));
+                indexOfBoard = this.boardsAndQValues.Count - 1;
             }
 
             return boardsAndQValues[indexOfBoard];
@@ -198,6 +175,8 @@ namespace GameLogic
 
         private void AddQValue(Board board, Player playerSet, int setFieldNr, int layerIdx)
         {
+            //File.AppendAllText("ComputerCalcBoards.txt", $"{board.ToString()}{Environment.NewLine}");
+
             boardsFieldPlayer.Push(new BoardFieldPlayer(board, setFieldNr, playerSet));
             if (board.Full() || board.Winner() != Player.None)
             {
@@ -257,7 +236,6 @@ namespace GameLogic
                         var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
                         if (addBlockingValueReward > 0)
                         {
-                            List<QualityDescription> boardsAndQValues = opponent == Player.Player ? playerBoardsAndQValues : computerBoardsAndQValues;
                             var boardAndQValue = boardsAndQValues.FirstOrDefault(b => b.Board == board);
                             if (boardAndQValue == null)
                             {

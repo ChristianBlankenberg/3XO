@@ -9,6 +9,8 @@ namespace TicTacToe
     using global::GameLogic;
     using TicTacToe.GameLogic;
 
+    // X; ;O;O;X;X;X; ;O
+
     internal class ConsoleGame
     {
         private Game game;
@@ -130,32 +132,37 @@ namespace TicTacToe
             throw new NotImplementedException();
         }
 
-        List<QualityDescription> playerBoardsAndQValues = null;
-        List<QualityDescription> computerBoardsAndQValues = null;
+        //List<QualityDescription> playerBoardsAndQValues = null;
+        //List<QualityDescription> computerBoardsAndQValues = null;
+        List<QualityDescription> boardsAndQValues;
         private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board board)
         {
-            List<QualityDescription> qValues = null;
+            //List<QualityDescription> qValues = null;
 
-            if (playerOrComputer == Player.Player)
+            //if (playerOrComputer == Player.Player)
+            //{
+            //    if (this.playerBoardsAndQValues == null)
+            //    {
+            //        this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
+            //    }
+
+            //    qValues = this.playerBoardsAndQValues;
+            //}
+            //else if (playerOrComputer == Player.Computer)
+            //{
+            //    if (this.computerBoardsAndQValues == null)
+            //    {
+            //        this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+            //    }
+
+            //    qValues = this.computerBoardsAndQValues;
+            //}
+            if (this.boardsAndQValues == null)
             {
-                if (this.playerBoardsAndQValues == null)
-                {
-                    this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
-                }
-
-                qValues = this.playerBoardsAndQValues;
-            }
-            else if (playerOrComputer == Player.Computer)
-            {
-                if (this.computerBoardsAndQValues == null)
-                {
-                    this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
-                }
-
-                qValues = this.computerBoardsAndQValues;
+                this.boardsAndQValues = QualityDescription.GetQualityDexcriptionList("boardsAndQValues.xml");
             }
 
-            var previewBoard = qValues.FirstOrDefault(bq => bq.Board == board);
+            var previewBoard = this.boardsAndQValues.FirstOrDefault(bq => bq.Board == board);
             if (previewBoard == null)
             {
                 throw new ArithmeticException();
