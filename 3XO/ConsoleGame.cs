@@ -40,7 +40,7 @@ namespace TicTacToe
             {
                 this.game.Clear();
 
-                foreach (var index in Board.SpalteIndexes(spalte))
+                foreach (var index in Board<PlayerComputer>.SpalteIndexes(spalte))
                 {
                     this.game.Set(new Coordinates(index), Player.Player);
                 }
@@ -53,7 +53,7 @@ namespace TicTacToe
             {
                 this.game.Clear();
 
-                foreach (var index in Board.ReiheIndexes(reihe))
+                foreach (var index in Board<PlayerComputer>.ReiheIndexes(reihe))
                 {
                     this.game.Set(new Coordinates(index), Player.Player);
                 }
@@ -64,7 +64,7 @@ namespace TicTacToe
 
             this.game.Clear();
 
-            foreach (var index in Board.DiagonaleLIUROIndexes())
+            foreach (var index in Board<PlayerComputer>.DiagonaleLIUROIndexes())
             {
                 this.game.Set(new Coordinates(index), Player.Player);
             }
@@ -74,7 +74,7 @@ namespace TicTacToe
 
             this.game.Clear();
 
-            foreach (var index in Board.DiagonaleLOURUIndexes())
+            foreach (var index in Board<PlayerComputer>.DiagonaleLOURUIndexes())
             {
                 this.game.Set(new Coordinates(index), Player.Player);
             }
@@ -98,7 +98,7 @@ namespace TicTacToe
             }
         }
 
-        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, Board board)
+        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, Board<PlayerComputer> board)
         {
             Coordinates coordinates;
             do
@@ -111,7 +111,7 @@ namespace TicTacToe
             this.PrintBoard();
         }
 
-        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, Board board)
+        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, Board<PlayerComputer> board)
         {
             switch (calculationMethod)
             {
@@ -132,7 +132,7 @@ namespace TicTacToe
 
         List<QualityDescription> playerBoardsAndQValues = null;
         List<QualityDescription> computerBoardsAndQValues = null;
-        private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board board)
+        private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board<PlayerComputer> board)
         {
             List<QualityDescription> qValues = null;
 
@@ -167,7 +167,7 @@ namespace TicTacToe
             var fields = board.Fields();
             for (int idx=0;idx<fields.Count;idx++)
             {
-                if (fields[idx] == Player.None && previewBoard.QualityMatrix[idx] > maxValue)
+                if (fields[idx].IsNone() && previewBoard.QualityMatrix[idx] > maxValue)
                 {
                     maxValue = previewBoard.QualityMatrix[idx];
                     maxIdx = idx;

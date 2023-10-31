@@ -9,7 +9,7 @@ namespace TicTacToe.GameLogic
 {
     public class Game
     {
-        private Board board;
+        private Board<PlayerComputer> board;
 
         private GameNeuronalNet gameNeuronal;
 
@@ -20,14 +20,15 @@ namespace TicTacToe.GameLogic
                 return true;
             }
 
-            return this.board.Winner() != Player.None;
+            return !this.board.Winner().IsNone();
         }
 
-        internal void Clear() => this.board = Board.Empty();
+        internal void Clear() => this.board = Board<PlayerComputer>.Empty();
 
         internal bool IsEmpty(Coordinates coordinates) => this.board.IsEmpty(coordinates.X, coordinates.Y);
 
-        internal void Set(Coordinates coordinates, Player playerOrComputer) => this.board.Set(coordinates.X, coordinates.Y, playerOrComputer);
+        internal void Set(Coordinates coordinates, Player playerOrComputer) => 
+            this.board.Set(coordinates.X, coordinates.Y, new PlayerComputer(playerOrComputer));
 
         internal void Debug()
         {
@@ -48,7 +49,7 @@ namespace TicTacToe.GameLogic
 
         internal string BoardToString() => this.board.ToString();
 
-        internal Game(Board board)
+        internal Game(Board<PlayerComputer> board)
         {
             this.board = board;
             this.gameNeuronal = new GameNeuronalNet();
@@ -59,9 +60,8 @@ namespace TicTacToe.GameLogic
 
         public void Test()
         {
-
         }
 
-        internal Board GetBoard() => this.board;
+        internal Board<PlayerComputer> GetBoard() => this.board;
     }
 }

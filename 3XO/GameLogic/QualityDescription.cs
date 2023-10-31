@@ -16,7 +16,7 @@ namespace GameLogic
         {
         }
 
-        public QualityDescription(Board board)
+        public QualityDescription(Board<PlayerComputer> board)
         {
             this.Board = board;
             this.QualityMatrix = Enumerable.Range(0, 9).Select(i => 0.0).ToList();
@@ -35,7 +35,7 @@ namespace GameLogic
         }
 
 
-        public Board Board { get; set; }
+        public Board<PlayerComputer> Board { get; set; }
 
         public List<double> QualityMatrix { get; set; }
     }

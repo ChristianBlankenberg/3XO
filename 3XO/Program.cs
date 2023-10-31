@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GameLogic;
 using TicTacToe.GameLogic;
 
@@ -12,20 +8,22 @@ namespace TicTacToe
     {
         static void Main(string[] args)
         {
-            RunGame();
-            //QLearn(new Board(" ; ; ; ;X;X; ; ;O"), Player.Player);
-            //QLearn(Board.Empty(), Player.Computer);
+            //RunGame();
+            //QLearn(new Board<PlayerComputer>(" ; ; ; ;X;X; ; ;O"), Player.Player);
+            QLearn(Board<PlayerComputer>.Empty(), Player.Computer);
+
+            Console.ReadLine();
         }
 
-        private static void QLearn(Board board, Player player)
+        private static void QLearn(Board<PlayerComputer> board, Player player)
         {
-            QLearnLogic qLearnLogic = new QLearnLogic();
+            QLearnLogic qLearnLogic = new QLearnLogic((s) => Console.WriteLine(s));
             qLearnLogic.QLearn(board, player);
         }
 
         private static void RunGame()
         {
-            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            ConsoleGame consoleGame = new ConsoleGame(new Game(Board<PlayerComputer>.Empty()));
             consoleGame.Test();
             consoleGame.Run();
         }

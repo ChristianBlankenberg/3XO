@@ -6,7 +6,7 @@ namespace GameLogic
     public class BoardFieldPlayer
     {
         public BoardFieldPlayer(
-            Board board, 
+            Board<PlayerComputer> board, 
             int fieldNr, 
             Player player)
         {
@@ -15,7 +15,7 @@ namespace GameLogic
             this.Player = player;
         }
 
-        public Board Board { get; }
+        public Board<PlayerComputer> Board { get; }
 
         public int FieldNr { get; }
 

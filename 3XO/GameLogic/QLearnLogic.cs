@@ -12,20 +12,32 @@ namespace GameLogic
         List<QualityDescription> playerBoardsAndQValues;
         List<QualityDescription> computerBoardsAndQValues;
         Stack<BoardFieldPlayer> boardsFieldPlayer;
+        private readonly Action<string> logAction;
 
-        internal void QLearn(Board board, Player player)
+        public QLearnLogic(Action<string> logAction)
+        {
+            this.logAction = logAction;
+        }
+
+        internal void QLearn(Board<PlayerComputer> board, Player player)
         {
             this.boardsFieldPlayer = new Stack<BoardFieldPlayer>();
             this.playerBoardsAndQValues = new List<QualityDescription>();
             this.computerBoardsAndQValues = new List<QualityDescription>();
 
+            this.Log("Calculate Q-Values");
             this.AddQValue(board, player, -1, 0);
             //this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
             //this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
+
+            this.Log("Calculate Block-Values");
             this.AddBlockValues(board, player, -1, 0);
 
+            this.Log("Save Results");
             this.SaveResults(this.playerBoardsAndQValues, "playerBoardsAndQValues.xml");
             this.SaveResults(this.computerBoardsAndQValues, "computerBoardsAndQValues.xml");
+
+            this.Log("Done...");
         }
 
         private void SaveResults(List<QualityDescription> qualityDescriptionList, string fileName)
@@ -39,7 +51,7 @@ namespace GameLogic
         internal void Test()
         {
             var qualityDescription = this.GetQValuesList(Player.Computer);
-            this.IterateAndTest(Board.Empty(), Player.Player, 0, 0, qualityDescription,
+            this.IterateAndTest(Board<PlayerComputer>.Empty(), Player.Player, 0, 0, qualityDescription,
                 (board, player, qDescription) =>
                 {
                     if (player == Player.Player)
@@ -52,20 +64,20 @@ namespace GameLogic
                 });
         }
 
-        private void IterateAndTest(Board board, Player player, int setFieldNr, int layerIdx, List<QualityDescription> qualityDescription, Action<Board, Player, List<QualityDescription>> checkAction)
+        private void IterateAndTest(Board<PlayerComputer> board, Player player, int setFieldNr, int layerIdx, List<QualityDescription> qualityDescription, Action<Board<PlayerComputer>, Player, List<QualityDescription>> checkAction)
         {
-            if (board.Full() || board.Winner() != Player.None)
+            if (board.Full() || !board.Winner().IsNone())
             {
             }
             else
             {
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
-                    Board newBoard = board.Copy();
+                    Board<PlayerComputer> newBoard = board.Copy();
                     Coordinates coordinates = new Coordinates(fieldNr);
-                    if (newBoard.Get(fieldNr) == Player.None)
+                    if (newBoard.Get(fieldNr).IsNone())
                     {
-                        newBoard.Set(fieldNr, player);
+                        newBoard.Set(fieldNr, new PlayerComputer(player));
                         checkAction(newBoard, player, qualityDescription);
                         this.IterateAndTest(newBoard, this.Opponent(player), fieldNr, layerIdx + 1, qualityDescription, checkAction);
                     }
@@ -88,14 +100,14 @@ namespace GameLogic
             return null;
         }
 
-        private void CheckReward(Board board, Player player)
+        private void CheckReward(Board<PlayerComputer> board, Player player)
         {
-            if (board.Winner() != Player.None)
+            if (!board.Winner().IsNone())
             {
 #if DODEBUG
                 bool debug = board.Winner() != Player.None && board.Get(3) != Player.None;
 #endif
-                Player boardWinner = board.Winner();
+                PlayerComputer boardWinner = board.Winner();
                 var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
 
 #if DODEBUG
@@ -125,7 +137,7 @@ namespace GameLogic
                     var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardPlayerField);
                     double q = boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue;
 
-                    double factor = boardWinner == boardPlayerField.Player ? 1 : -1;
+                    double factor = boardWinner.Equals(new PlayerComputer(boardPlayerField.Player)) ? 1 : -1;
                     boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += factor * q;
 
 #if DODEBUG
@@ -146,7 +158,7 @@ namespace GameLogic
             }
         }
 
-        private void Debug(Board board, Player player, int fieldNr, double qValue, string comment)
+        private void Debug(Board<PlayerComputer> board, Player player, int fieldNr, double qValue, string comment)
         {
             File.AppendAllText("Debug.txt", $"{comment}{Environment.NewLine}");
             File.AppendAllText("Debug.txt", $"Player={player}{Environment.NewLine}");
@@ -174,7 +186,7 @@ namespace GameLogic
             }
 
             var previousBoard = boardFieldPlayer.Board.Copy();
-            previousBoard.Set(boardFieldPlayer.FieldNr, Player.None);
+            previousBoard.Set(boardFieldPlayer.FieldNr, new PlayerComputer(Player.None));
 
             int indexOfBoard = boardsAndQValues.FindIndex(bq => bq.Board == previousBoard);
             if (indexOfBoard == -1)
@@ -188,10 +200,10 @@ namespace GameLogic
 
         private Player Opponent(Player player) => player == Player.Player ? Player.Computer : Player.Player;
 
-        private void AddQValue(Board board, Player playerSet, int setFieldNr, int layerIdx)
+        private void AddQValue(Board<PlayerComputer> board, Player playerSet, int setFieldNr, int layerIdx)
         {
             boardsFieldPlayer.Push(new BoardFieldPlayer(board, setFieldNr, playerSet));
-            if (board.Full() || board.Winner() != Player.None)
+            if (board.Full() || !board.Winner().IsNone())
             {
                 this.CheckReward(board, playerSet);
             }
@@ -199,11 +211,22 @@ namespace GameLogic
             {
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
-                    Board newBoard = board.Copy();
-                    Coordinates coordinates = new Coordinates(fieldNr);
-                    if (newBoard.Get(fieldNr) == Player.None)
+                    if (layerIdx < 3)
                     {
-                        newBoard.Set(fieldNr, this.Opponent(playerSet));
+                        string ins = string.Empty;
+                        for(int idx = 0;idx<layerIdx;idx++)
+                        {
+                            ins += " ";
+                        }
+
+                        this.Log($"{ins}Calculate field {fieldNr} at layer {layerIdx}");
+                    }
+
+                    Board<PlayerComputer> newBoard = board.Copy();
+                    Coordinates coordinates = new Coordinates(fieldNr);
+                    if (newBoard.Get(fieldNr).IsNone())
+                    {
+                        newBoard.Set(fieldNr, new PlayerComputer(this.Opponent(playerSet)));
                         this.AddQValue(newBoard, this.Opponent(playerSet), fieldNr, layerIdx + 1);
                         boardsFieldPlayer.Pop();
                     }
@@ -211,9 +234,9 @@ namespace GameLogic
             }
         }
 
-        private void AddBlockValues(Board board, Player playerSet, int setFieldNr, int layerIdx)
+        private void AddBlockValues(Board<PlayerComputer> board, Player playerSet, int setFieldNr, int layerIdx)
         {
-            if (board.Full() || board.Winner() != Player.None)
+            if (board.Full() || !board.Winner().IsNone())
             {
             }
             else
@@ -222,11 +245,11 @@ namespace GameLogic
 
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
-                    Board newBoard = board.Copy();
+                    Board<PlayerComputer> newBoard = board.Copy();
                     Coordinates coordinates = new Coordinates(fieldNr);
-                    if (newBoard.Get(fieldNr) == Player.None)
+                    if (newBoard.Get(fieldNr).IsNone())
                     {
-                        newBoard.Set(fieldNr, opponent);
+                        newBoard.Set(fieldNr, new PlayerComputer(opponent));
 
                         var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
                         if (addBlockingValueReward > 0)
@@ -247,17 +270,22 @@ namespace GameLogic
             }
         }
 
-        private double GetAddBlockingValueReward(Board newBoard, int fieldNr, Player playerSet)
+        private double GetAddBlockingValueReward(Board<PlayerComputer> newBoard, int fieldNr, Player playerSet)
         {
             double result = 0;
-            newBoard.Set(fieldNr, playerSet);
-            if (newBoard.Winner() == playerSet)
+            newBoard.Set(fieldNr, new PlayerComputer(playerSet));
+            if (newBoard.Winner().Equals(playerSet))
             {
                 result = 100;
             }
 
-            newBoard.Set(fieldNr, this.Opponent(playerSet));
+            newBoard.Set(fieldNr, new PlayerComputer(this.Opponent(playerSet)));
             return result;
+        }
+
+        private void Log(string logContent)
+        {
+            this.logAction?.Invoke(logContent);
         }
     }
 }

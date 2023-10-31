@@ -4,11 +4,12 @@ namespace TicTacToe.GameLogic
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using global::GameLogic;
 
     [Serializable]
-    public class Board
+    public class Board<T> where T : class, IPlayer, new()
     {
-        private List<Player> boardFields;
+        private List<T> boardFields;
 
         public string BoardFieldsString
         {
@@ -16,34 +17,46 @@ namespace TicTacToe.GameLogic
             set => this.boardFields = this.FromString(value);
         }
 
-        public string ToString() 
-            => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
+        public string ToString() => 
+            string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
 
         public Board(string boardString) : this()
         {
-            this.boardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+            this.boardFields = this.EmptyBoard();
+
             var fields = boardString.Split(new char[] { ';' });
             for(int fieldNr = 0;fieldNr < fields.Length; fieldNr++)
             {
-                this.Set(fieldNr, fields[fieldNr].PlayerFromString());
+                T t = new T();
+                t.FromString(fields[fieldNr]);
+                this.Set(fieldNr, t);
             }
         }
 
-        public List<Player> FromString(string boardString)
+        public List<T> FromString(string boardString)
         {
+            List<T> result = new List<T>();
+
             var fields = boardString.Split(new char[] { ';' });
-            return fields.Select(s => s.PlayerFromString()).ToList();
+            T t = new T();
+            for(int i=0;i<fields.Length;i++)
+            {
+                t.FromString(fields[i]);
+                result.Add(t);
+            }
+
+            return result;
         }
 
-        public static bool operator == (Board a, Board b)
+        public static bool operator == (Board<T> a, Board<T> b)
             => (!ReferenceEquals(a, null)) ? a.Equals(b) : ReferenceEquals(b, null);
 
-        public static bool operator !=(Board a, Board b) 
+        public static bool operator !=(Board<T> a, Board<T> b) 
             => !(a == b);
 
         public override bool Equals(object o)
         {
-            if (o != null && o is Board board)
+            if (o != null && o is Board<T> board)
             {
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
@@ -59,27 +72,27 @@ namespace TicTacToe.GameLogic
             return false;
         }
 
-        internal static Board Empty()
+        internal static Board<T> Empty()
         { 
-            Board result = new Board();
-            result.boardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+            Board<T> result = new Board<T>();
+            result.boardFields = result.EmptyBoard();
             return result;
         }
 
-        internal static Board Random()
+        internal static Board<T> Random()
         {
-            Board board = new Board();
+            Board<T> board = new Board<T>();
             for (int fieldNr = 0; fieldNr < 9; fieldNr++)
             {
-                board.boardFields[fieldNr] = board.boardFields[fieldNr].Random();
+                board.boardFields[fieldNr].Random();
             }
 
             return board;
         }
 
-        internal Board Copy()
+        internal Board<T> Copy()
         {
-            Board board = Board.Empty();
+            Board<T> board = Board<T>.Empty();
             for (int fieldNr = 0; fieldNr < 9; fieldNr++)
             {
                 board.boardFields[fieldNr] = this.boardFields[fieldNr];
@@ -88,16 +101,16 @@ namespace TicTacToe.GameLogic
             return board;
         }
 
-        internal List<Player> Reihe(int nr) 
+        internal List<T> Reihe(int nr) 
             => ReiheIndexes(nr).Select(idx => this.Get(idx)).ToList();
 
-        internal List<Player> Spalte(int nr) 
+        internal List<T> Spalte(int nr) 
             => SpalteIndexes(nr).Select(idx => this.Get(idx)).ToList();
 
-        internal List<Player> DiagonaleLIURO() 
+        internal List<T> DiagonaleLIURO() 
             => DiagonaleLIUROIndexes().Select(idx => this.Get(idx)).ToList();
 
-        internal List<Player> DiagonaleLOURU() 
+        internal List<T> DiagonaleLOURU() 
             => DiagonaleLOURUIndexes().Select(idx => this.Get(idx)).ToList();
 
         internal static List<int> ReiheIndexes(int nr) 
@@ -112,22 +125,22 @@ namespace TicTacToe.GameLogic
         internal static List<int> DiagonaleLOURUIndexes() 
             => new List<int> { 6, 4, 2, };
 
-        internal Player Get(int fieldNr) 
+        internal T Get(int fieldNr) 
             => this.Get(new Coordinates(fieldNr));
 
-        internal Player Get(Coordinates coordinates) 
+        internal T Get(Coordinates coordinates) 
             => this.boardFields[coordinates.FieldNr];
 
-        internal void Set(int fieldNr, Player playerOrComputer)
+        internal void Set(int fieldNr, T playerOrComputer)
             => this.boardFields[fieldNr] = playerOrComputer;
         
-        internal void Set(int x, int y, Player playerOrComputer)
+        internal void Set(int x, int y, T playerOrComputer)
             => this.boardFields[new Coordinates(x, y).FieldNr] = playerOrComputer;
 
         internal bool IsEmpty(int x, int y)
-            => this.boardFields[new Coordinates(x, y).FieldNr] == Player.None;
+            => this.boardFields[new Coordinates(x, y).FieldNr].IsNone();
 
-        internal List<Player> Fields() 
+        internal List<T> Fields() 
             => Enumerable.Range(0, 9).Select(idx => this.Get(idx)).ToList();
 
         internal List<string> Print()
@@ -145,38 +158,41 @@ namespace TicTacToe.GameLogic
             return output;
         }
 
-        internal bool Full() => this.Fields().All(f => f == Player.Computer || f == Player.Player);
+        internal bool Full() => this.Fields().All(f => !f.IsNone());
 
-        internal Player Winner()
+        internal T Winner()
         {
             for (int nr = 0; nr < 3; nr++)
             {
                 var reihe = this.Reihe(nr);
-                if (reihe.All(f => f == Player.Player) || reihe.All(f => f == Player.Computer))
+                if (reihe.All(f => f.IsA()) || reihe.All(f => f.IsB()))
                 {
                     return reihe.First();
                 }
 
                 var spalte = this.Spalte(nr);
-                if (spalte.All(f => f == Player.Player) || spalte.All(f => f == Player.Computer))
+                if (spalte.All(f => f.IsA()) || spalte.All(f => f.IsB()))
                 {
                     return spalte.First();
                 }
             }
 
             var diagonale = this.DiagonaleLIURO();
-            if (diagonale.All(f => f == Player.Player) || diagonale.All(f => f == Player.Computer))
+            if (diagonale.All(f => f.IsA()) || diagonale.All(f => f.IsB()))
             {
                 return diagonale.First();
             }
 
             diagonale = this.DiagonaleLOURU();
-            if (diagonale.All(f => f == Player.Player) || diagonale.All(f => f == Player.Computer))
+            if (diagonale.All(f => f.IsA()) || diagonale.All(f => f.IsB()))
             {
                 return diagonale.First();
             }
 
-            return Player.None;
+            T t = new T();
+            t.None();
+
+            return t;
         }
 
         private string GetField(int x, int y)
@@ -185,6 +201,20 @@ namespace TicTacToe.GameLogic
         private Board()
         {
             //=> this.BoardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
+        }
+
+
+        private List<T> EmptyBoard()
+        {
+            List<T> result = new List<T>();
+            for (int i = 0; i < 9; i++)
+            {
+                T t = new T();
+                t.None();
+                result.Add(t);
+            }
+
+            return result;
         }
     }
 }
