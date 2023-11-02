@@ -119,25 +119,28 @@ namespace GameLogic
                 }
 #endif
 
-                double qValue = boardWinner != Player.None ? 1 : 0;
-                for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
-                {
-                    boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue = qValue;
-                    qValue *= 0.9;
-                }
+                //double qValue = boardWinner != Player.None ? 1 : 0;
+                //for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
+                //{
+                //    boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue = qValue;
+                //    qValue *= 0.9;
+                //}
 
                 for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
                 {
                     var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
                     int fieldNr = boardPlayerField.FieldNr;
                     var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardPlayerField);
-                    double q = boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue;
 
-                    double factor = boardWinner == boardPlayerField.Player ? 1 : -1;
-                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += factor * q;
+                    boardsAndQValues.WinsLosses[boardPlayerField.FieldNr].Register(boardsFieldPlayerListIdx, boardWinner, boardPlayerField.Player);
 
-                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetBlockingValueReward(boardPlayerField);
-                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetSplitValueReward(boardPlayerField);
+                    //double q = boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue;
+
+                //double factor = boardWinner == boardPlayerField.Player ? 1 : -1;
+
+                //boardsAndQValues.WinsLosses[boardPlayerField.FieldNr] += factor * q;
+                //boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetBlockingValueReward(boardPlayerField);
+                //boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetSplitValueReward(boardPlayerField);
 
 #if DODEBUG
                     if (debug && fieldNr == 3)
@@ -146,7 +149,7 @@ namespace GameLogic
                         File.AppendAllText("Debug.txt", $"----------------------------------------------------------------{Environment.NewLine}");
                     }
 #endif
-                qValue *= 0.9;
+                //qValue *= 0.9;
                 }
         }
 

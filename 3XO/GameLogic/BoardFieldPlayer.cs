@@ -24,6 +24,6 @@ namespace GameLogic
 
         public Player Opponent { get; }
 
-        public double QValue { get; set; }
+        //public double QValue { get; set; }
     }
 }

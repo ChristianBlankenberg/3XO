@@ -32,7 +32,7 @@ namespace TicTacToe.GameLogic
         internal void Debug()
         {
             QualityDescription qualityDescription = new QualityDescription(this.board);
-            qualityDescription.QualityMatrix[3] = Math.PI;
+            //qualityDescription.QualityMatrix[3] = Math.PI;
 
             List<QualityDescription> qualityDescriptionList = new List<QualityDescription>();
             qualityDescriptionList.Add(qualityDescription);

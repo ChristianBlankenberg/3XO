@@ -168,15 +168,15 @@ namespace TicTacToe
                 throw new ArithmeticException();
             }
 
-            double maxValue = -double.MaxValue;
+            long maxValue = long.MinValue;
             int maxIdx = -1;
 
             var fields = board.Fields();
             for (int idx=0;idx<fields.Count;idx++)
             {
-                if (fields[idx] == Player.None && previewBoard.QualityMatrix[idx] > maxValue)
+                if (fields[idx] == Player.None && previewBoard.WinsLosses[idx].Q() > maxValue)
                 {
-                    maxValue = previewBoard.QualityMatrix[idx];
+                    maxValue = previewBoard.WinsLosses[idx].Q();
                     maxIdx = idx;
                 }
             }
