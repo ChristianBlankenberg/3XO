@@ -32,7 +32,7 @@ namespace GameLogic
             //this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
 
             this.Log("Add Blocking Values");
-            this.AddBlockValues(board, player, -1, 0);
+            //this.AddBlockValues(board, player, -1, 0);
 
             this.Log("Save Results ");
             this.SaveResults(this.boardsAndQValues, "boardsAndQValues.xml");
@@ -136,6 +136,9 @@ namespace GameLogic
                     double factor = boardWinner == boardPlayerField.Player ? 1 : -1;
                     boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += factor * q;
 
+                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetBlockingValueReward(boardPlayerField);
+                    boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetSplitValueReward(boardPlayerField);
+
 #if DODEBUG
                     if (debug && fieldNr == 3)
                     {
@@ -143,7 +146,7 @@ namespace GameLogic
                         File.AppendAllText("Debug.txt", $"----------------------------------------------------------------{Environment.NewLine}");
                     }
 #endif
-                    qValue *= 0.9;
+                qValue *= 0.9;
                 }
         }
 
@@ -214,54 +217,83 @@ namespace GameLogic
             }
         }
 
-        private void AddBlockValues(Board board, Player playerSet, int setFieldNr, int layerIdx)
-        {
-            if (board.Full() || board.Winner() != Player.None)
-            {
-            }
-            else
-            {
-                var opponent = playerSet.Opponent();
+        //private void AddBlockValues(Board board, Player playerSet, int setFieldNr, int layerIdx)
+        //{
+        //    if (board.Full() || board.Winner() != Player.None)
+        //    {
+        //    }
+        //    else
+        //    {
+        //        var opponent = playerSet.Opponent();
 
-                for (int fieldNr = 0; fieldNr < 9; fieldNr++)
-                {
-                    this.LogCalcIndex(layerIdx, fieldNr);
+        //        for (int fieldNr = 0; fieldNr < 9; fieldNr++)
+        //        {
+        //            this.LogCalcIndex(layerIdx, fieldNr);
 
-                    Board newBoard = board.Copy();
-                    Coordinates coordinates = new Coordinates(fieldNr);
-                    if (newBoard.Get(fieldNr) == Player.None)
-                    {
-                        newBoard.Set(fieldNr, opponent);
+        //            Board newBoard = board.Copy();
+        //            Coordinates coordinates = new Coordinates(fieldNr);
+        //            if (newBoard.Get(fieldNr) == Player.None)
+        //            {
+        //                newBoard.Set(fieldNr, opponent);
 
-                        var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
-                        if (addBlockingValueReward > 0)
-                        {
-                            var boardAndQValue = boardsAndQValues.FirstOrDefault(b => b.Board == board);
-                            if (boardAndQValue == null)
-                            {
-                                throw (new ArgumentException(nameof(boardAndQValue)));
-                            }
+        //                var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
+        //                if (addBlockingValueReward > 0)
+        //                {
+        //                    var boardAndQValue = boardsAndQValues.FirstOrDefault(b => b.Board == board);
+        //                    if (boardAndQValue == null)
+        //                    {
+        //                        throw (new ArgumentException(nameof(boardAndQValue)));
+        //                    }
 
-                            boardAndQValue.QualityMatrix[fieldNr] += addBlockingValueReward;
-                        }
+        //                    boardAndQValue.QualityMatrix[fieldNr] += addBlockingValueReward;
+        //                }
                      
-                        this.AddBlockValues(newBoard, opponent, fieldNr, layerIdx + 1);
+        //                this.AddBlockValues(newBoard, opponent, fieldNr, layerIdx + 1);
+        //            }
+        //        }
+        //    }
+        //}
+
+        private double GetBlockingValueReward(BoardFieldPlayer boardFieldPlayer)
+        {
+            double reward = 0;
+            Board board = boardFieldPlayer.Board;
+
+            if (board.Winner() == Player.None)
+            {
+                board.Set(boardFieldPlayer.FieldNr, boardFieldPlayer.Opponent);
+                if (board.Winner() == boardFieldPlayer.Opponent)
+                {
+                    reward = 100;
+                }
+                board.Set(boardFieldPlayer.FieldNr, boardFieldPlayer.Player);
+            }
+            
+            return reward;
+        }
+
+        private double GetSplitValueReward(BoardFieldPlayer boardFieldPlayer)
+        {            
+            int nrOfWins = 0;
+
+            Board board = boardFieldPlayer.Board;
+            if (board.Winner() == Player.None)
+            {
+                for(int fieldNr=0;fieldNr<9;fieldNr++)
+                {
+                    if (board.Get(fieldNr) == Player.None)
+                    {
+                        board.Set(fieldNr, boardFieldPlayer.Player);
+                        if (board.Winner() == boardFieldPlayer.Player)                        
+                        {
+                            nrOfWins++;
+                        }
+                        board.Set(fieldNr, Player.None);
                     }
                 }
             }
-        }
 
-        private double GetAddBlockingValueReward(Board newBoard, int fieldNr, Player playerSet)
-        {
-            double result = 0;
-            newBoard.Set(fieldNr, playerSet);
-            if (newBoard.Winner() == playerSet)
-            {
-                result = 100;
-            }
-
-            newBoard.Set(fieldNr, playerSet.Opponent());
-            return result;
+            return nrOfWins > 1 ? 100 : 0;
         }
 
         private void Log(string content)

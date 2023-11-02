@@ -13,6 +13,7 @@ namespace GameLogic
             this.Board = board;
             this.FieldNr = fieldNr;
             this.Player = player;
+            this.Opponent = player.Opponent();
         }
 
         public Board Board { get; }
@@ -20,6 +21,8 @@ namespace GameLogic
         public int FieldNr { get; }
 
         public Player Player { get; }
+
+        public Player Opponent { get; }
 
         public double QValue { get; set; }
     }
