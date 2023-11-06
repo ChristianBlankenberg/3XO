@@ -9,7 +9,7 @@ namespace TicTacToe
         static void Main(string[] args)
         {
             RunGame();
-            //QLearn(new Board("X; ;O;O;X;X;X; ;O"), Player.Player);
+            //QLearn(new Board("X; ;O; ;O; ;X; ;X"), Player.Player);
             //QLearn(Board.Empty(), Player.Computer);
             Console.ReadLine();
         }
@@ -18,12 +18,6 @@ namespace TicTacToe
         {
             QLearnLogic qLearnLogic = new QLearnLogic((s) => Console.WriteLine(s));
             qLearnLogic.QLearn(board, player);
-        }
-        
-        private static void QLearnTest(Board board, Player player)
-        {
-            QLearnLogic qLearnLogic = new QLearnLogic((s) => Console.WriteLine(s));
-            qLearnLogic.Test();
         }
 
         private static void RunGame()

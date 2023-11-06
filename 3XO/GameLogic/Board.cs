@@ -30,14 +30,14 @@ namespace TicTacToe.GameLogic
             }
         }
 
-        public string ToString() 
+        public string ToString()
             => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
 
         public Board(string boardString) : this()
         {
             this.SetBoardFields(Enumerable.Range(0, 9).Select(i => Player.None).ToList());
             var fields = boardString.Split(new char[] { ';' });
-            for(int fieldNr = 0;fieldNr < fields.Length; fieldNr++)
+            for (int fieldNr = 0; fieldNr < fields.Length; fieldNr++)
             {
                 this.Set(fieldNr, fields[fieldNr].PlayerFromString());
             }
@@ -50,7 +50,7 @@ namespace TicTacToe.GameLogic
         }
 
         private void UpdateValues()
-        { 
+        {
             this.hashCode = this.CalculateHashCode();
         }
 
@@ -74,10 +74,10 @@ namespace TicTacToe.GameLogic
             return fields.Select(s => s.PlayerFromString()).ToList();
         }
 
-        public static bool operator == (Board a, Board b)
+        public static bool operator ==(Board a, Board b)
             => (!ReferenceEquals(a, null)) ? a.Equals(b) : ReferenceEquals(b, null);
 
-        public static bool operator !=(Board a, Board b) 
+        public static bool operator !=(Board a, Board b)
             => !(a == b);
 
         public override bool Equals(object o)
@@ -97,6 +97,25 @@ namespace TicTacToe.GameLogic
             }
 
             return false;
+        }
+
+        public int NrOfWinOptions(Player player)
+        {
+            int nrOfWins = 0;
+            for (int fieldNr = 0; fieldNr < 9; fieldNr++)
+            {
+                if (this.Get(fieldNr) == Player.None)
+                {
+                    this.Set(fieldNr, player);
+                    if (this.Winner() == player)
+                    {
+                        nrOfWins++;
+                    }
+                    this.Set(fieldNr, Player.None);
+                }
+            }
+
+            return nrOfWins;
         }
 
         internal static Board Empty()

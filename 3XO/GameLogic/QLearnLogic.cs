@@ -28,11 +28,6 @@ namespace GameLogic
 
             this.Log("Add Q Values");
             this.AddQValue(board, player, -1, 0);
-            //this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
-            //this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
-
-            this.Log("Add Blocking Values");
-            //this.AddBlockValues(board, player, -1, 0);
 
             this.Log("Save Results ");
             this.SaveResults(this.boardsAndQValues, "boardsAndQValues.xml");
@@ -44,22 +39,6 @@ namespace GameLogic
             StreamWriter streamWriter = new StreamWriter(fileName);
             xmlSerializer.Serialize(streamWriter, qualityDescriptionList);
             streamWriter.Close();
-        }
-
-        internal void Test()
-        {
-            var qualityDescription = this.GetQValuesList(Player.Computer);
-            this.IterateAndTest(Board.Empty(), Player.Player, 0, 0, qualityDescription,
-                (board, player, qDescription) =>
-                {
-                    if (player == Player.Player)
-                    {
-                        if (qDescription.FindIndex(b => b.Board == board) == -1)
-                        {
-                            File.AppendAllText("ComputerNoBoards.txt", $"{board.ToString()}{Environment.NewLine}");
-                        }
-                    }
-                });
         }
 
         private void IterateAndTest(Board board, Player player, int setFieldNr, int layerIdx, List<QualityDescription> qualityDescription, Action<Board, Player, List<QualityDescription>> checkAction)
@@ -83,74 +62,43 @@ namespace GameLogic
             }
         }
 
-
-        private List<QualityDescription> GetQValuesList(Player playerOrComputer)
-        {
-            if (playerOrComputer == Player.Player)
-            {
-                return QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
-            }
-            else if (playerOrComputer == Player.Computer)
-            {
-                return QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
-            }
-
-            return null;
-        }
-
         private void CheckReward(Board board, Player player)
         {
-#if DODEBUG
-                bool debug = board.Winner() != Player.None && board.Get(3) != Player.None;
-#endif
-                Player boardWinner = board.Winner();
-                var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
+            Player boardWinner = board.Winner();
+            var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
 
-#if DODEBUG
-                if (debug)
+            for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
+            {
+                var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
+                int fieldNr = boardPlayerField.FieldNr;
+                var boardsAndQValues = this.GetPreviousPlayerOrComputerBoardAndQValues(boardPlayerField);
+
+                boardsAndQValues.WinsLosses[boardPlayerField.FieldNr].Register(boardsFieldPlayerListIdx, boardWinner, boardPlayerField.Player);
+            }
+
+            /*
+            bool splitBoardFound = false;
+            for (int boardsFieldPlayerListIdx = boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx >= 0 && !splitBoardFound; boardsFieldPlayerListIdx--)
+            {
+                var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
+
+                int nrOfWinOptions = this.GetNrOfWinOptions(boardPlayerField, boardPlayerField.Player);
+                if (nrOfWinOptions > 1)
                 {
-                    File.AppendAllText("Debug.txt", $"----------------------------------------------------------------{Environment.NewLine}");
-                    File.AppendAllText("Debug.txt", $"Winner={board.Winner()}{Environment.NewLine}");
-                    this.Debug(
-                        boardsFieldPlayerList[0].Board,
-                        boardsFieldPlayerList[0].Player,
-                        boardsFieldPlayerList[0].FieldNr, 
-                        1, "Winnerboard");
-                }
-#endif
+                    splitBoardFound = true;
 
-                //double qValue = boardWinner != Player.None ? 1 : 0;
-                //for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
-                //{
-                //    boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue = qValue;
-                //    qValue *= 0.9;
-                //}
-
-                for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
-                {
-                    var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
-                    int fieldNr = boardPlayerField.FieldNr;
-                    var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardPlayerField);
-
-                    boardsAndQValues.WinsLosses[boardPlayerField.FieldNr].Register(boardsFieldPlayerListIdx, boardWinner, boardPlayerField.Player);
-
-                    //double q = boardsFieldPlayerList[boardsFieldPlayerListIdx].QValue;
-
-                //double factor = boardWinner == boardPlayerField.Player ? 1 : -1;
-
-                //boardsAndQValues.WinsLosses[boardPlayerField.FieldNr] += factor * q;
-                //boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetBlockingValueReward(boardPlayerField);
-                //boardsAndQValues.QualityMatrix[boardPlayerField.FieldNr] += this.GetSplitValueReward(boardPlayerField);
-
-#if DODEBUG
-                    if (debug && fieldNr == 3)
+                    for (int depth = boardsFieldPlayerListIdx; depth < boardsFieldPlayerList.Count - 1; depth++)
                     {
-                        this.Debug(boardsAndQValues.Board, boardPlayerField.Player, boardPlayerField.FieldNr, factor * qValue, "Intermediate");
-                        File.AppendAllText("Debug.txt", $"----------------------------------------------------------------{Environment.NewLine}");
+                        int fieldNr2 = boardsFieldPlayerList[depth].FieldNr;
+                        var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardsFieldPlayerList[depth]);
+                        boardsAndQValues.WinsLosses[fieldNr2].RegisterSplitBoard(
+                            depth - boardsFieldPlayerListIdx,
+                            nrOfWinOptions,
+                            depth % 2 == 0);
                     }
-#endif
-                //qValue *= 0.9;
                 }
+            }
+            */
         }
 
         private void Debug(Board board, Player player, int fieldNr, double qValue, string comment)
@@ -163,16 +111,22 @@ namespace GameLogic
             board.Print().ForEach(line => File.AppendAllText("Debug.txt", $"{line}{Environment.NewLine}"));
         }
 
-        private QualityDescription GetPlayerOrComputerBoardAndQValues(BoardFieldPlayer boardFieldPlayer)
+        private QualityDescription GetPreviousPlayerOrComputerBoardAndQValues(BoardFieldPlayer boardFieldPlayer)
         {
 
             var previousBoard = boardFieldPlayer.Board.Copy();
             previousBoard.Set(boardFieldPlayer.FieldNr, Player.None);
 
-            int indexOfBoard = this.boardsAndQValues.FindIndex(bq => bq.Board == previousBoard);
+            return this.GetPlayerOrComputerBoardAndQValues(previousBoard);
+        }
+
+        private QualityDescription GetPlayerOrComputerBoardAndQValues(Board board)
+        {
+
+            int indexOfBoard = this.boardsAndQValues.FindIndex(bq => bq.Board == board);
             if (indexOfBoard == -1)
             {
-                this.boardsAndQValues.Add(new QualityDescription(previousBoard));
+                this.boardsAndQValues.Add(new QualityDescription(board));
                 indexOfBoard = this.boardsAndQValues.Count - 1;
             }
 
@@ -184,6 +138,22 @@ namespace GameLogic
             //File.AppendAllText("ComputerCalcBoards.txt", $"{board.ToString()}{Environment.NewLine}");
 
             boardsFieldPlayer.Push(new BoardFieldPlayer(board, setFieldNr, playerSet));
+
+            int nrOfWinOptions = board.NrOfWinOptions(playerSet);
+            if (nrOfWinOptions > 1)
+            {
+                var boardFielPlayerList = boardsFieldPlayer.ToList();
+                for (int i = 0; i < boardFielPlayerList.Count - 1; i++)
+                {
+                    int fieldNr2 = boardFielPlayerList[i].FieldNr;
+                    var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardFielPlayerList[i].Board);
+                    boardsAndQValues.WinsLosses[fieldNr2].RegisterSplitBoard(
+                        i,
+                        nrOfWinOptions,
+                        i % 2 == 0);
+                }
+            }
+
             if (board.Full() || board.Winner() != Player.None)
             {
                 this.CheckReward(board, playerSet);
@@ -220,43 +190,6 @@ namespace GameLogic
             }
         }
 
-        //private void AddBlockValues(Board board, Player playerSet, int setFieldNr, int layerIdx)
-        //{
-        //    if (board.Full() || board.Winner() != Player.None)
-        //    {
-        //    }
-        //    else
-        //    {
-        //        var opponent = playerSet.Opponent();
-
-        //        for (int fieldNr = 0; fieldNr < 9; fieldNr++)
-        //        {
-        //            this.LogCalcIndex(layerIdx, fieldNr);
-
-        //            Board newBoard = board.Copy();
-        //            Coordinates coordinates = new Coordinates(fieldNr);
-        //            if (newBoard.Get(fieldNr) == Player.None)
-        //            {
-        //                newBoard.Set(fieldNr, opponent);
-
-        //                var addBlockingValueReward = this.GetAddBlockingValueReward(newBoard, fieldNr, playerSet);
-        //                if (addBlockingValueReward > 0)
-        //                {
-        //                    var boardAndQValue = boardsAndQValues.FirstOrDefault(b => b.Board == board);
-        //                    if (boardAndQValue == null)
-        //                    {
-        //                        throw (new ArgumentException(nameof(boardAndQValue)));
-        //                    }
-
-        //                    boardAndQValue.QualityMatrix[fieldNr] += addBlockingValueReward;
-        //                }
-                     
-        //                this.AddBlockValues(newBoard, opponent, fieldNr, layerIdx + 1);
-        //            }
-        //        }
-        //    }
-        //}
-
         private double GetBlockingValueReward(BoardFieldPlayer boardFieldPlayer)
         {
             double reward = 0;
@@ -271,32 +204,13 @@ namespace GameLogic
                 }
                 board.Set(boardFieldPlayer.FieldNr, boardFieldPlayer.Player);
             }
-            
+
             return reward;
         }
 
-        private double GetSplitValueReward(BoardFieldPlayer boardFieldPlayer)
-        {            
-            int nrOfWins = 0;
-
-            Board board = boardFieldPlayer.Board;
-            if (board.Winner() == Player.None)
-            {
-                for(int fieldNr=0;fieldNr<9;fieldNr++)
-                {
-                    if (board.Get(fieldNr) == Player.None)
-                    {
-                        board.Set(fieldNr, boardFieldPlayer.Player);
-                        if (board.Winner() == boardFieldPlayer.Player)                        
-                        {
-                            nrOfWins++;
-                        }
-                        board.Set(fieldNr, Player.None);
-                    }
-                }
-            }
-
-            return nrOfWins > 1 ? 100 : 0;
+        private int GetNrOfWinOptions(BoardFieldPlayer boardFieldPlayer, Player player)
+        {
+            return boardFieldPlayer.Board.NrOfWinOptions(player);
         }
 
         private void Log(string content)

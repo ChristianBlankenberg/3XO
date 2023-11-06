@@ -19,7 +19,7 @@ namespace GameLogic
         public QualityDescription(Board board)
         {
             this.Board = board;
-            this.WinsLosses = Enumerable.Range(0, 9).Select(i => new WinsLosses(9)).ToList();
+            this.WinsLosses = Enumerable.Range(0, 9).Select(i => new WinsLossesSplitBoards(9)).ToList();
         }
 
         public static List<QualityDescription> GetQualityDexcriptionList(string filename)
@@ -36,6 +36,6 @@ namespace GameLogic
 
         public Board Board { get; set; }
 
-        public List<WinsLosses> WinsLosses { get; set; }
+        public List<WinsLossesSplitBoards> WinsLosses { get; set; }
     }
 }

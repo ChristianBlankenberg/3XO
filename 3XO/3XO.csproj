@@ -53,7 +53,7 @@
     <Compile Include="GameLogic\Player.cs" />
     <Compile Include="GameLogic\QLearnLogic.cs" />
     <Compile Include="GameLogic\QualityDescription.cs" />
-    <Compile Include="GameLogic\WinsLosses.cs" />
+    <Compile Include="GameLogic\WinsLossesSplitBoards.cs" />
     <Compile Include="NeuronalNet\Data\AusgabeNormal.cs" />
     <Compile Include="NeuronalNet\Data\IAktivierung.cs" />
     <Compile Include="NeuronalNet\Data\IAusgabe.cs" />

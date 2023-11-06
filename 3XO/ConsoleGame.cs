@@ -137,26 +137,6 @@ namespace TicTacToe
         List<QualityDescription> boardsAndQValues;
         private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board board)
         {
-            //List<QualityDescription> qValues = null;
-
-            //if (playerOrComputer == Player.Player)
-            //{
-            //    if (this.playerBoardsAndQValues == null)
-            //    {
-            //        this.playerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("playerBoardsAndQValues.xml");
-            //    }
-
-            //    qValues = this.playerBoardsAndQValues;
-            //}
-            //else if (playerOrComputer == Player.Computer)
-            //{
-            //    if (this.computerBoardsAndQValues == null)
-            //    {
-            //        this.computerBoardsAndQValues = QualityDescription.GetQualityDexcriptionList("computerBoardsAndQValues.xml");
-            //    }
-
-            //    qValues = this.computerBoardsAndQValues;
-            //}
             if (this.boardsAndQValues == null)
             {
                 this.boardsAndQValues = QualityDescription.GetQualityDexcriptionList("boardsAndQValues.xml");
@@ -168,20 +148,92 @@ namespace TicTacToe
                 throw new ArithmeticException();
             }
 
-            long maxValue = long.MinValue;
             int maxIdx = -1;
 
-            var fields = board.Fields();
-            for (int idx=0;idx<fields.Count;idx++)
+            // Test for loose winning
+            var checkBoard = previewBoard.Board.Copy();
+            var fields = checkBoard.Fields();
+            for (int idx = 0; idx < fields.Count && maxIdx == -1; idx++)
             {
-                if (fields[idx] == Player.None && previewBoard.WinsLosses[idx].Q() > maxValue)
+                if (fields[idx] == Player.None)
                 {
-                    maxValue = previewBoard.WinsLosses[idx].Q();
-                    maxIdx = idx;
+                    checkBoard.Set(idx, playerOrComputer);
+                    if (checkBoard.Winner() == playerOrComputer)
+                    {
+                        maxIdx = idx;
+                    }
+
+                    checkBoard.Set(idx, Player.None);
+                }
+            }
+
+            // Test for loose blocking
+            if (maxIdx == -1)
+            {
+                checkBoard = previewBoard.Board.Copy();
+                fields = checkBoard.Fields();
+                for (int idx = 0; idx < fields.Count && maxIdx == -1; idx++)
+                {
+                    if (fields[idx] == Player.None)
+                    {
+                        checkBoard.Set(idx, playerOrComputer.Opponent());
+                        if (checkBoard.Winner() == playerOrComputer.Opponent())
+                        {
+                            maxIdx = idx;
+                        }
+
+                        checkBoard.Set(idx, Player.None);
+                    }
+                }
+            }
+
+            if (maxIdx == -1)
+            {
+                List<Board> boards = new List<Board>();
+                this.GetNextTwoBoardPossibilities(previewBoard.Board, boards, playerOrComputer, 0);
+
+                long maxValue = long.MinValue;
+
+                foreach(var b in boards)
+                {
+                    var previewB = this.boardsAndQValues.FirstOrDefault(bq => bq.Board == b);
+                    if (previewB == null)
+                    {
+                        throw new ArithmeticException();
+                    }
+
+                    for (int idx = 0; idx < fields.Count; idx++)
+                    {
+                        if (fields[idx] == Player.None)
+                        {
+                            if (previewB.WinsLosses[idx].SplitLooseBoardsQ() > maxValue)
+                            {
+                                maxIdx = idx;
+                                maxValue = previewB.WinsLosses[idx].SplitWinBoardsQ();
+                            }
+                        }
+                    }
                 }
             }
 
             return new Coordinates(maxIdx);
+        }
+
+        private void GetNextTwoBoardPossibilities(Board board, List<Board> boards, Player playerOrComputer, int depth)
+        {
+            if (depth < 2)
+            {
+                for (int idx = 0; idx < 9; idx++)
+                {
+                    if (board.Get(idx) == Player.None)
+                    {
+                        Board newBoard = board.Copy();
+                        newBoard.Set(idx, playerOrComputer);
+                        boards.Add(newBoard);
+                        this.GetNextTwoBoardPossibilities(newBoard, boards, playerOrComputer.Opponent(), depth + 1);
+                    }
+                }
+            }
         }
 
         private Coordinates GetRandomCoordinates()
