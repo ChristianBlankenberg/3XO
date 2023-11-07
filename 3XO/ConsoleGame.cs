@@ -3,15 +3,11 @@ namespace TicTacToe
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
-    using System.Xml.Serialization;
     using global::GameLogic;
     using TicTacToe.GameLogic;
 
-    // X; ;O;O;X;X;X; ;O
-
-    internal class ConsoleGame
+    internal class ConsoleGame<BoardType> where BoardType : class, IBoard
     {
         private Game game;
 
@@ -31,10 +27,10 @@ namespace TicTacToe
             }
         }
 
-        internal void Debug()
-        {
-            this.game.Debug();
-        }
+        //internal void Debug()
+        //{
+        //    this.game.Debug();
+        //}
 
         internal void Test()
         {
@@ -42,7 +38,7 @@ namespace TicTacToe
             {
                 this.game.Clear();
 
-                foreach (var index in Board.SpalteIndexes(spalte))
+                foreach (var index in ThreeXOBoard.SpalteIndexes(spalte))
                 {
                     this.game.Set(new Coordinates(index), Player.Player);
                 }
@@ -55,7 +51,7 @@ namespace TicTacToe
             {
                 this.game.Clear();
 
-                foreach (var index in Board.ReiheIndexes(reihe))
+                foreach (var index in ThreeXOBoard.ReiheIndexes(reihe))
                 {
                     this.game.Set(new Coordinates(index), Player.Player);
                 }
@@ -66,7 +62,7 @@ namespace TicTacToe
 
             this.game.Clear();
 
-            foreach (var index in Board.DiagonaleLIUROIndexes())
+            foreach (var index in ThreeXOBoard.DiagonaleLIUROIndexes())
             {
                 this.game.Set(new Coordinates(index), Player.Player);
             }
@@ -76,7 +72,7 @@ namespace TicTacToe
 
             this.game.Clear();
 
-            foreach (var index in Board.DiagonaleLOURUIndexes())
+            foreach (var index in ThreeXOBoard.DiagonaleLOURUIndexes())
             {
                 this.game.Set(new Coordinates(index), Player.Player);
             }
@@ -100,7 +96,7 @@ namespace TicTacToe
             }
         }
 
-        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, Board board)
+        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
         {
             Coordinates coordinates;
             do
@@ -113,7 +109,7 @@ namespace TicTacToe
             this.PrintBoard();
         }
 
-        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, Board board)
+        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
         {
             switch (calculationMethod)
             {
@@ -134,15 +130,15 @@ namespace TicTacToe
 
         //List<QualityDescription> playerBoardsAndQValues = null;
         //List<QualityDescription> computerBoardsAndQValues = null;
-        List<QualityDescription> boardsAndQValues;
-        private Coordinates GetCoordinatesQValues(Player playerOrComputer, Board board)
+        List<QualityDescription<BoardType>> boardsAndQValues;
+        private Coordinates GetCoordinatesQValues(Player playerOrComputer, IBoard board)
         {
             if (this.boardsAndQValues == null)
             {
-                this.boardsAndQValues = QualityDescription.GetQualityDexcriptionList("boardsAndQValues.xml");
+                this.boardsAndQValues = QualityDescription<BoardType>.GetQualityDexcriptionList("boardsAndQValues.xml");
             }
 
-            var previewBoard = this.boardsAndQValues.FirstOrDefault(bq => bq.Board == board);
+            var previewBoard = this.boardsAndQValues.FirstOrDefault(bq => bq.Board.Equals(board));
             if (previewBoard == null)
             {
                 throw new ArithmeticException();
@@ -152,7 +148,7 @@ namespace TicTacToe
 
             // Test for loose winning
             var checkBoard = previewBoard.Board.Copy();
-            var fields = checkBoard.Fields();
+            var fields = checkBoard.AllFields();
             for (int idx = 0; idx < fields.Count && maxIdx == -1; idx++)
             {
                 if (fields[idx] == Player.None)
@@ -171,7 +167,7 @@ namespace TicTacToe
             if (maxIdx == -1)
             {
                 checkBoard = previewBoard.Board.Copy();
-                fields = checkBoard.Fields();
+                fields = checkBoard.AllFields();
                 for (int idx = 0; idx < fields.Count && maxIdx == -1; idx++)
                 {
                     if (fields[idx] == Player.None)
@@ -189,14 +185,14 @@ namespace TicTacToe
 
             if (maxIdx == -1)
             {
-                List<Board> boards = new List<Board>();
+                List<IBoard> boards = new List<IBoard>();
                 this.GetNextTwoBoardPossibilities(previewBoard.Board, boards, playerOrComputer, 0);
 
                 long maxValue = long.MinValue;
 
                 foreach(var b in boards)
                 {
-                    var previewB = this.boardsAndQValues.FirstOrDefault(bq => bq.Board == b);
+                    var previewB = this.boardsAndQValues.FirstOrDefault(bq => bq.Board.Equals(b));
                     if (previewB == null)
                     {
                         throw new ArithmeticException();
@@ -219,7 +215,7 @@ namespace TicTacToe
             return new Coordinates(maxIdx);
         }
 
-        private void GetNextTwoBoardPossibilities(Board board, List<Board> boards, Player playerOrComputer, int depth)
+        private void GetNextTwoBoardPossibilities(IBoard board, List<IBoard> boards, Player playerOrComputer, int depth)
         {
             if (depth < 2)
             {
@@ -227,7 +223,7 @@ namespace TicTacToe
                 {
                     if (board.Get(idx) == Player.None)
                     {
-                        Board newBoard = board.Copy();
+                        IBoard newBoard = board.Copy();
                         newBoard.Set(idx, playerOrComputer);
                         boards.Add(newBoard);
                         this.GetNextTwoBoardPossibilities(newBoard, boards, playerOrComputer.Opponent(), depth + 1);

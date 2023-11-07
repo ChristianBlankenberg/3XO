@@ -135,7 +135,6 @@
         {
             //Neuronen erstellen, in Liste einfügen
             this.Neurons = new List<List<Neuron>>();
-            int index = 0;
             for (int layerIdx = 0; layerIdx < layers.Length; layerIdx++)
             {
                 List<Neuron> neuronen = new List<Neuron>();

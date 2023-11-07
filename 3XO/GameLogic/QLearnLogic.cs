@@ -7,24 +7,28 @@ using TicTacToe.GameLogic;
 
 namespace GameLogic
 {
-    internal class QLearnLogic
+    internal class QLearnLogic<BoardType> where BoardType : class, IBoard 
     {
         //List<QualityDescription> playerBoardsAndQValues;
         //List<QualityDescription> computerBoardsAndQValues;
-        List<QualityDescription> boardsAndQValues;
+        List<QualityDescription<BoardType>> boardsAndQValues;
 
         Stack<BoardFieldPlayer> boardsFieldPlayer;
         private readonly Action<string> logAction;
+
+        public QLearnLogic()
+        {
+        }
 
         public QLearnLogic(Action<string> logAction)
         {
             this.logAction = logAction;
         }
 
-        internal void QLearn(Board board, Player player)
+        internal void QLearn(ThreeXOBoard board, Player player)
         {
             this.boardsFieldPlayer = new Stack<BoardFieldPlayer>();
-            this.boardsAndQValues = new List<QualityDescription>();
+            this.boardsAndQValues = new List<QualityDescription<BoardType>>();
 
             this.Log("Add Q Values");
             this.AddQValue(board, player, -1, 0);
@@ -33,15 +37,15 @@ namespace GameLogic
             this.SaveResults(this.boardsAndQValues, "boardsAndQValues.xml");
         }
 
-        private void SaveResults(List<QualityDescription> qualityDescriptionList, string fileName)
+        private void SaveResults(List<QualityDescription<BoardType>> qualityDescriptionList, string fileName)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<QualityDescription>));
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<QualityDescription<BoardType>>));
             StreamWriter streamWriter = new StreamWriter(fileName);
             xmlSerializer.Serialize(streamWriter, qualityDescriptionList);
             streamWriter.Close();
         }
 
-        private void IterateAndTest(Board board, Player player, int setFieldNr, int layerIdx, List<QualityDescription> qualityDescription, Action<Board, Player, List<QualityDescription>> checkAction)
+        private void IterateAndTest(IBoard board, Player player, int setFieldNr, int layerIdx, List<QualityDescription<BoardType>> qualityDescription, Action<IBoard, Player, List<QualityDescription<BoardType>>> checkAction)
         {
             if (board.Full() || board.Winner() != Player.None)
             {
@@ -50,8 +54,8 @@ namespace GameLogic
             {
                 for (int fieldNr = 0; fieldNr < 9; fieldNr++)
                 {
-                    Board newBoard = board.Copy();
-                    Coordinates coordinates = new Coordinates(fieldNr);
+                    IBoard newBoard = board.Copy();
+                    ICoordinates coordinates = new Coordinates(fieldNr);
                     if (newBoard.Get(fieldNr) == Player.None)
                     {
                         newBoard.Set(fieldNr, player);
@@ -62,7 +66,7 @@ namespace GameLogic
             }
         }
 
-        private void CheckReward(Board board, Player player)
+        private void CheckReward(IBoard board, Player player)
         {
             Player boardWinner = board.Winner();
             var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
@@ -101,7 +105,7 @@ namespace GameLogic
             */
         }
 
-        private void Debug(Board board, Player player, int fieldNr, double qValue, string comment)
+        private void Debug(ThreeXOBoard board, Player player, int fieldNr, double qValue, string comment)
         {
             File.AppendAllText("Debug.txt", $"{comment}{Environment.NewLine}");
             File.AppendAllText("Debug.txt", $"Player={player}{Environment.NewLine}");
@@ -111,29 +115,29 @@ namespace GameLogic
             board.Print().ForEach(line => File.AppendAllText("Debug.txt", $"{line}{Environment.NewLine}"));
         }
 
-        private QualityDescription GetPreviousPlayerOrComputerBoardAndQValues(BoardFieldPlayer boardFieldPlayer)
+        private QualityDescription<BoardType> GetPreviousPlayerOrComputerBoardAndQValues(BoardFieldPlayer boardFieldPlayer)
         {
 
-            var previousBoard = boardFieldPlayer.Board.Copy();
+            BoardType previousBoard = (BoardType)boardFieldPlayer.Board.Copy();
             previousBoard.Set(boardFieldPlayer.FieldNr, Player.None);
 
             return this.GetPlayerOrComputerBoardAndQValues(previousBoard);
         }
 
-        private QualityDescription GetPlayerOrComputerBoardAndQValues(Board board)
+        private QualityDescription<BoardType> GetPlayerOrComputerBoardAndQValues(BoardType board)
         {
 
             int indexOfBoard = this.boardsAndQValues.FindIndex(bq => bq.Board == board);
             if (indexOfBoard == -1)
             {
-                this.boardsAndQValues.Add(new QualityDescription(board));
+                this.boardsAndQValues.Add(new QualityDescription<BoardType>(board));
                 indexOfBoard = this.boardsAndQValues.Count - 1;
             }
 
             return boardsAndQValues[indexOfBoard];
         }
 
-        private void AddQValue(Board board, Player playerSet, int setFieldNr, int layerIdx)
+        private void AddQValue(IBoard board, Player playerSet, int setFieldNr, int layerIdx)
         {
             //File.AppendAllText("ComputerCalcBoards.txt", $"{board.ToString()}{Environment.NewLine}");
 
@@ -146,7 +150,7 @@ namespace GameLogic
                 for (int i = 0; i < boardFielPlayerList.Count - 1; i++)
                 {
                     int fieldNr2 = boardFielPlayerList[i].FieldNr;
-                    var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues(boardFielPlayerList[i].Board);
+                    var boardsAndQValues = this.GetPlayerOrComputerBoardAndQValues((BoardType)boardFielPlayerList[i].Board);
                     boardsAndQValues.WinsLosses[fieldNr2].RegisterSplitBoard(
                         i,
                         nrOfWinOptions,
@@ -164,7 +168,7 @@ namespace GameLogic
                 {
                     this.LogCalcIndex(layerIdx, fieldNr);
 
-                    Board newBoard = board.Copy();
+                    IBoard newBoard = board.Copy();
                     Coordinates coordinates = new Coordinates(fieldNr);
                     if (newBoard.Get(fieldNr) == Player.None)
                     {
@@ -193,7 +197,7 @@ namespace GameLogic
         private double GetBlockingValueReward(BoardFieldPlayer boardFieldPlayer)
         {
             double reward = 0;
-            Board board = boardFieldPlayer.Board;
+            IBoard board = boardFieldPlayer.Board;
 
             if (board.Winner() == Player.None)
             {

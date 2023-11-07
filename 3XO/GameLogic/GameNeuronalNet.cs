@@ -16,7 +16,7 @@ namespace TicTacToe.GameLogic
             this.neuronalesNetz.GenerateNeuronalNet(new int[] { 9, 12, 9 });
         }
 
-        internal Coordinates GetOutput(Board board)
+        internal Coordinates GetOutput(IBoard board)
         {
             double[] output = this.neuronalesNetz.Calculate(this.GetInputLayer(board));
 
@@ -59,7 +59,7 @@ namespace TicTacToe.GameLogic
             return result;
         }
 
-        private double[] GetInputLayer(Board board) => board.Fields().Select(b => b.AsDouble()).ToArray();
+        private double[] GetInputLayer(IBoard board) => board.AllFields().Select(b => b.AsDouble()).ToArray();
 
         private double[] Get3XOVector(int idx)
         {

@@ -6,7 +6,7 @@ namespace GameLogic
     public class BoardFieldPlayer
     {
         public BoardFieldPlayer(
-            Board board, 
+            IBoard board, 
             int fieldNr, 
             Player player)
         {
@@ -16,7 +16,7 @@ namespace GameLogic
             this.Opponent = player.Opponent();
         }
 
-        public Board Board { get; }
+        public IBoard Board { get; }
 
         public int FieldNr { get; }
 

@@ -9,20 +9,20 @@ namespace TicTacToe
         static void Main(string[] args)
         {
             RunGame();
-            //QLearn(new Board("X; ;O; ;O; ;X; ;X"), Player.Player);
-            //QLearn(Board.Empty(), Player.Computer);
+            //QLearn(new ThreeXOBoard("X; ;O; ;O; ;X; ;X"), Player.Player);
+            //QLearn(ThreeXOBoard.Empty(), Player.Computer);
             Console.ReadLine();
         }
 
-        private static void QLearn(Board board, Player player)
+        private static void QLearn(ThreeXOBoard board, Player player)
         {
-            QLearnLogic qLearnLogic = new QLearnLogic((s) => Console.WriteLine(s));
+            QLearnLogic<ThreeXOBoard> qLearnLogic = new QLearnLogic<ThreeXOBoard>((s) => Console.WriteLine(s));
             qLearnLogic.QLearn(board, player);
         }
 
         private static void RunGame()
         {
-            ConsoleGame consoleGame = new ConsoleGame(new Game(Board.Empty()));
+            ConsoleGame<ThreeXOBoard> consoleGame = new ConsoleGame<ThreeXOBoard>(new Game(ThreeXOBoard.Empty()));
             consoleGame.Test();
             consoleGame.Run();
         }

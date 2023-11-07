@@ -2,7 +2,7 @@
 
 namespace TicTacToe.GameLogic
 {
-    internal class Coordinates
+    internal class Coordinates : ICoordinates
     {
         internal Coordinates(int x, int y)
         {
@@ -35,7 +35,7 @@ namespace TicTacToe.GameLogic
 
         internal int Y { get; }
 
-        internal int FieldNr => this.Y * 3 + this.X;
+        public int FieldNr => this.Y * 3 + this.X;
       
     }
 }
