@@ -1,7 +1,8 @@
 ﻿namespace TicTacToe.GameLogic
 {
     using System;
-    
+    using System.Collections.Generic;
+
     public enum Player
     {
         Unknown,
@@ -49,6 +50,43 @@
             }
 
             return "?";
+        }
+
+        internal static List<string> AsStringList(this Player player)
+        {
+            switch (player)
+            {
+                case Player.Unknown:
+                    return new List<string>
+                    {
+                        "     ",
+                        "  ?  ",
+                        "     ",
+                    };
+                case Player.None:
+                    return new List<string>
+                    {
+                        "     ",
+                        "     ",
+                        "     ",
+                    };
+                case Player.Computer:
+                    return new List<string>
+                    {
+                        " OOO ",
+                        "O   O",
+                        " OOO ",
+                    };
+                case Player.Player:
+                    return new List<string>
+                    {
+                        " X X ",
+                        "  X  ",
+                        " X X ",
+                    };
+            }
+
+            return null;
         }
 
         internal static double AsDouble(this Player player)

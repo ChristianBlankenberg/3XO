@@ -8,12 +8,11 @@ namespace TicTacToe.GameLogic
 {
     internal class GameNeuronalNet
     {
-        INeuronalesNetz neuronalesNetz;
+        INeuronalNet neuronalesNetz;
 
         internal GameNeuronalNet()
         {
-            this.neuronalesNetz = new NeuronalesNetz();
-            this.neuronalesNetz.GenerateNeuronalNet(new int[] { 9, 12, 9 });
+            this.neuronalesNetz = new NeuronalNet.NeuronalNet(new int[] { 9, 12, 9 });
         }
 
         internal Coordinates GetOutput(IBoard board)
@@ -27,11 +26,11 @@ namespace TicTacToe.GameLogic
 
         internal void Init()
         {
-            List<ITrainingsMuster> trainingsMuster = new List<ITrainingsMuster>();
+            List<ITrainingPattern> trainingsMuster = new List<ITrainingPattern>();
 
             for (int i = 0; i < 9; i++)
             {
-                trainingsMuster.Add(new Trainingsmuster(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
+                trainingsMuster.Add(new TraininsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
             }
 
             this.neuronalesNetz.Train(1000000, 0.3, 0.001, trainingsMuster);
@@ -39,18 +38,18 @@ namespace TicTacToe.GameLogic
 
         internal List<string> Test()
         {
-            List<ITrainingsMuster> trainingsMuster = new List<ITrainingsMuster>();
+            List<ITrainingPattern> trainingsMuster = new List<ITrainingPattern>();
 
             for (int i = 0; i < 9; i++)
             {
-                trainingsMuster.Add(new Trainingsmuster(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
+                trainingsMuster.Add(new TraininsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
             }
 
             List<string> result = new List<string>();
-            foreach (Trainingsmuster tm in trainingsMuster)
+            foreach (ITrainingPattern tm in trainingsMuster)
             {
-                string outStr = string.Join(", ", tm.EingabeVektor);
-                double[] ausgabe = this.neuronalesNetz.Calculate(tm.EingabeVektor);
+                string outStr = string.Join(", ", tm.InputVector);
+                double[] ausgabe = this.neuronalesNetz.Calculate(tm.OutputVector);
                 outStr += " : ";
                 outStr += string.Join(", ", ausgabe);
                 result.Add(outStr);

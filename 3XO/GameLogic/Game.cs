@@ -27,7 +27,7 @@ namespace TicTacToe.GameLogic
 
         internal bool IsEmpty(ICoordinates coordinates) => this.board.IsEmpty(coordinates);
 
-        internal void Set(Coordinates coordinates, Player playerOrComputer) => this.board.Set(coordinates, playerOrComputer);
+        internal void Set(int fieldIdx, Player playerOrComputer) => this.board.Set(fieldIdx, playerOrComputer);
 
         //internal void Debug()
         //{

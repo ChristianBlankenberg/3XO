@@ -9,6 +9,8 @@ namespace TicTacToe
 
     internal class ConsoleGame<BoardType> where BoardType : class, IBoard
     {
+        private CalculationMethod ComputerCalculationMethod = CalculationMethod.QValues;
+
         private Game game;
 
         internal ConsoleGame(Game game)
@@ -27,11 +29,6 @@ namespace TicTacToe
             }
         }
 
-        //internal void Debug()
-        //{
-        //    this.game.Debug();
-        //}
-
         internal void Test()
         {
             for (int spalte = 0; spalte < 3; spalte++)
@@ -40,7 +37,7 @@ namespace TicTacToe
 
                 foreach (var index in ThreeXOBoard.SpalteIndexes(spalte))
                 {
-                    this.game.Set(new Coordinates(index), Player.Player);
+                    this.game.Set(index, Player.Player);
                 }
 
                 this.PrintBoard();
@@ -53,7 +50,7 @@ namespace TicTacToe
 
                 foreach (var index in ThreeXOBoard.ReiheIndexes(reihe))
                 {
-                    this.game.Set(new Coordinates(index), Player.Player);
+                    this.game.Set(index, Player.Player);
                 }
 
                 this.PrintBoard();
@@ -64,7 +61,7 @@ namespace TicTacToe
 
             foreach (var index in ThreeXOBoard.DiagonaleLIUROIndexes())
             {
-                this.game.Set(new Coordinates(index), Player.Player);
+                this.game.Set(index, Player.Player);
             }
 
             this.PrintBoard();
@@ -74,42 +71,49 @@ namespace TicTacToe
 
             foreach (var index in ThreeXOBoard.DiagonaleLOURUIndexes())
             {
-                this.game.Set(new Coordinates(index), Player.Player);
+                this.game.Set(index, Player.Player);
             }
 
             this.PrintBoard();
             Console.ReadKey();
         }
 
-        internal void Run()
+        internal void Run(Player startPlayer)
         {
             this.game.Clear();
             this.PrintBoard();
 
             while (!this.game.Over())
             {
-                this.Set(Player.Player, CalculationMethod.Console, this.game.GetBoard());
+                this.Set(startPlayer, this.GetCalculationMethod(startPlayer), this.game.GetBoard());
                 if (!this.game.Over())
                 {
-                    this.Set(Player.Computer, CalculationMethod.QValues, this.game.GetBoard());
+                    this.Set(startPlayer.Opponent(), this.GetCalculationMethod(startPlayer.Opponent()), this.game.GetBoard());
                 }
             }
         }
 
-        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
+        private CalculationMethod GetCalculationMethod(Player player)
         {
-            Coordinates coordinates;
-            do
+            switch (player)
             {
-                coordinates = this.GetCoordinates(playerOrComputer, calculationMethod, board);
+                case Player.Computer:
+                    return ComputerCalculationMethod;
+                case Player.Player:
+                    return CalculationMethod.Console;
             }
 
-            while (!this.game.IsEmpty(coordinates));
-            this.game.Set(coordinates, playerOrComputer);
+            return CalculationMethod.Random;
+        }
+
+        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
+        {
+            ICoordinates coordinates = this.GetCoordinates(playerOrComputer, calculationMethod, board);            
+            this.game.Set(coordinates.FieldNr, playerOrComputer);
             this.PrintBoard();
         }
 
-        private Coordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
+        private ICoordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
         {
             switch (calculationMethod)
             {
@@ -118,7 +122,7 @@ namespace TicTacToe
                 case CalculationMethod.Console:
                     return this.GetCoordinatesFromConsole();
                 case CalculationMethod.Random:
-                    return this.GetRandomCoordinates();
+                    return this.GetRandomCoordinates(board);
                 case CalculationMethod.NeuronalNet:
                     return this.GetCoordinatesFromNeuronalNet();
                 case CalculationMethod.QValues:
@@ -128,10 +132,8 @@ namespace TicTacToe
             throw new NotImplementedException();
         }
 
-        //List<QualityDescription> playerBoardsAndQValues = null;
-        //List<QualityDescription> computerBoardsAndQValues = null;
         List<QualityDescription<BoardType>> boardsAndQValues;
-        private Coordinates GetCoordinatesQValues(Player playerOrComputer, IBoard board)
+        private ICoordinates GetCoordinatesQValues(Player playerOrComputer, IBoard board)
         {
             if (this.boardsAndQValues == null)
             {
@@ -148,38 +150,31 @@ namespace TicTacToe
 
             // Test for loose winning
             var checkBoard = previewBoard.Board.Copy();
-            var fields = checkBoard.AllFields();
-            for (int idx = 0; idx < fields.Count && maxIdx == -1; idx++)
+            var emptyFieldIdxs = checkBoard.GetEmptyFieldIdxs();
+            foreach (var emptyFieldIdx in emptyFieldIdxs)
             {
-                if (fields[idx] == Player.None)
+                checkBoard.Set(emptyFieldIdx, playerOrComputer);
+                if (checkBoard.Winner() == playerOrComputer)
                 {
-                    checkBoard.Set(idx, playerOrComputer);
-                    if (checkBoard.Winner() == playerOrComputer)
-                    {
-                        maxIdx = idx;
-                    }
-
-                    checkBoard.Set(idx, Player.None);
+                    maxIdx = emptyFieldIdx;
                 }
+
+                checkBoard.Set(emptyFieldIdx, Player.None);
             }
 
             // Test for loose blocking
             if (maxIdx == -1)
             {
                 checkBoard = previewBoard.Board.Copy();
-                fields = checkBoard.AllFields();
-                for (int idx = 0; idx < fields.Count && maxIdx == -1; idx++)
+                foreach (var emptyFieldIdx in emptyFieldIdxs)
                 {
-                    if (fields[idx] == Player.None)
+                    checkBoard.Set(emptyFieldIdx, playerOrComputer.Opponent());
+                    if (checkBoard.Winner() == playerOrComputer.Opponent())
                     {
-                        checkBoard.Set(idx, playerOrComputer.Opponent());
-                        if (checkBoard.Winner() == playerOrComputer.Opponent())
-                        {
-                            maxIdx = idx;
-                        }
-
-                        checkBoard.Set(idx, Player.None);
+                        maxIdx = emptyFieldIdx;
                     }
+
+                    checkBoard.Set(emptyFieldIdx, Player.None);
                 }
             }
 
@@ -189,8 +184,9 @@ namespace TicTacToe
                 this.GetNextTwoBoardPossibilities(previewBoard.Board, boards, playerOrComputer, 0);
 
                 long maxValue = long.MinValue;
+                List<int> possibleFields = new List<int>();
 
-                foreach(var b in boards)
+                foreach (var b in boards)
                 {
                     var previewB = this.boardsAndQValues.FirstOrDefault(bq => bq.Board.Equals(b));
                     if (previewB == null)
@@ -198,18 +194,25 @@ namespace TicTacToe
                         throw new ArithmeticException();
                     }
 
-                    for (int idx = 0; idx < fields.Count; idx++)
+                    foreach (var emptyFieldIdx in emptyFieldIdxs)
                     {
-                        if (fields[idx] == Player.None)
+                        var q = previewB.WinsLosses[emptyFieldIdx].SplitWinBoardsQ() - previewB.WinsLosses[emptyFieldIdx].SplitLooseBoardsQ();
+                        if (q > maxValue)
                         {
-                            if (previewB.WinsLosses[idx].SplitLooseBoardsQ() > maxValue)
-                            {
-                                maxIdx = idx;
-                                maxValue = previewB.WinsLosses[idx].SplitWinBoardsQ();
-                            }
+                            possibleFields = new List<int>();
+                            possibleFields.Add(emptyFieldIdx);
+                            maxValue = q;
+                        }
+                        else if (q == maxValue && !possibleFields.Contains(emptyFieldIdx))
+                        {
+                            possibleFields.Add(emptyFieldIdx);
                         }
                     }
                 }
+
+                Random random = new Random();
+
+                maxIdx = possibleFields[random.Next(0, possibleFields.Count())];
             }
 
             return new Coordinates(maxIdx);
@@ -232,10 +235,12 @@ namespace TicTacToe
             }
         }
 
-        private Coordinates GetRandomCoordinates()
+        private ICoordinates GetRandomCoordinates(IBoard board)
         {
+            var emptyFieldIdxs = board.GetEmptyFieldIdxs();
+
             Random random = new Random();
-            return new Coordinates(random.Next(0, 3), random.Next(0, 3));
+            return new Coordinates(emptyFieldIdxs[random.Next(0, emptyFieldIdxs.Count)]);
         }
 
         private Coordinates GetCoordinatesFromNeuronalNet() => this.game.GetCoordinatesFromNeuronalNet();

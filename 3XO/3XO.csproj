@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="ConsoleGame.cs" />
     <Compile Include="GameLogic\ThreeXOBoard.cs" />
-    <Compile Include="GameLogic\BoardFieldPlayer.cs" />
+    <Compile Include="GameLogic\BoardAndFieldAndPlayer.cs" />
     <Compile Include="GameLogic\CalculationMethod.cs" />
     <Compile Include="GameLogic\Coordinates.cs" />
     <Compile Include="GameLogic\Game.cs" />
@@ -56,25 +56,17 @@
     <Compile Include="GameLogic\QLearnLogic.cs" />
     <Compile Include="GameLogic\QualityDescription.cs" />
     <Compile Include="GameLogic\WinsLossesSplitBoards.cs" />
-    <Compile Include="NeuronalNet\Data\AusgabeNormal.cs" />
-    <Compile Include="NeuronalNet\Data\IAktivierung.cs" />
-    <Compile Include="NeuronalNet\Data\IAusgabe.cs" />
-    <Compile Include="NeuronalNet\Data\Linear.cs" />
-    <Compile Include="NeuronalNet\Data\Linear_bS.cs" />
-    <Compile Include="NeuronalNet\Data\Neuron.cs" />
-    <Compile Include="NeuronalNet\Data\Schwellenwert.cs" />
-    <Compile Include="NeuronalNet\Data\Sigmoid.cs" />
-    <Compile Include="NeuronalNet\INeuronalesNetz.cs" />
-    <Compile Include="NeuronalNet\INeutron.cs" />
-    <Compile Include="NeuronalNet\ITrainingsMuster.cs" />
-    <Compile Include="NeuronalNet\NeuronalesNetz.cs" />
-    <Compile Include="NeuronalNet\Trainingsmuster.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\NeuronalNetwork\NeuronalesNetzBackpropagation\NeuronalesNetz.csproj">
+      <Project>{fecb5508-4d2c-47f5-89e3-c9dcec186113}</Project>
+      <Name>NeuronalesNetz</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

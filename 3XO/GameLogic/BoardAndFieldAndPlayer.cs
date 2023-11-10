@@ -3,9 +3,9 @@ namespace GameLogic
 {
     using TicTacToe.GameLogic;
     
-    public class BoardFieldPlayer
+    public class BoardAndFieldAndPlayer
     {
-        public BoardFieldPlayer(
+        public BoardAndFieldAndPlayer(
             IBoard board, 
             int fieldNr, 
             Player player)
