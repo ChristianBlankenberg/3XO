@@ -227,7 +227,7 @@ namespace TicTacToe.GameLogic
             return output;
         }
 
-        public bool Full() => this.AllFields().All(f => f == Player.Computer || f == Player.Player);
+        public bool IsFull() => this.AllFields().All(f => f == Player.Computer || f == Player.Player);
 
         public Player Winner()
         {
@@ -265,6 +265,35 @@ namespace TicTacToe.GameLogic
             => this.boardFields[new Coordinates(x, y).FieldNr].AsStringList();
 
         public List<int> GetAllFieldIdxs() => Enumerable.Range(0, 9).ToList();
+
+        public int FirstDiffIdx(IBoard board)
+        {
+            var allFieldIdxs = this.GetAllFieldIdxs();
+            foreach(var fieldIdx in allFieldIdxs)
+            {
+                if (this.Get(fieldIdx) != board.Get(fieldIdx))
+                {
+                    return fieldIdx;
+                } 
+            }
+
+            return -1;
+        }
+
+        public Player PlayersTurn(Player firstPlayer)
+        {
+            if (this.boardFields.Count(p => p == firstPlayer) == this.boardFields.Count(p => p == firstPlayer.Opponent()))
+            {
+                return firstPlayer;
+            }
+            else
+            {
+                return firstPlayer.Opponent();
+            }
+        }
+
+        public bool IsTerminal() => this.IsFull() || this.Winner() != Player.None;
+       
 
         private ThreeXOBoard()
         {

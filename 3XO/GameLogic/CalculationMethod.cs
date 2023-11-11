@@ -12,6 +12,8 @@
 
         NeuronalNet,
 
-        QValues
+        QValues,
+
+        MinMax
     }
 }

@@ -15,13 +15,15 @@ namespace TicTacToe.GameLogic
 
         internal bool Over()
         {
-            if (this.board.Full())
+            if (this.board.IsFull())
             {
                 return true;
             }
 
             return this.board.Winner() != Player.None;
         }
+
+        internal void SetBoard(IBoard board) => this.board = board;
 
         internal void Clear() => this.board = ThreeXOBoard.Empty();
 

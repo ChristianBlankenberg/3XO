@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleGame.cs" />
+    <Compile Include="GameLogic\GameLogicMinMax.cs" />
+    <Compile Include="GameLogic\MinMaxDescription.cs" />
     <Compile Include="GameLogic\ThreeXOBoard.cs" />
     <Compile Include="GameLogic\BoardAndFieldAndPlayer.cs" />
     <Compile Include="GameLogic\CalculationMethod.cs" />

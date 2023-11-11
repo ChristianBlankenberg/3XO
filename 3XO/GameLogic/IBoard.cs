@@ -4,7 +4,7 @@ namespace TicTacToe.GameLogic
 {
     public interface IBoard
     {
-        bool Full();
+        bool IsFull();
 
         bool IsEmpty(ICoordinates coordinates);
 
@@ -25,5 +25,11 @@ namespace TicTacToe.GameLogic
         IBoard Copy();
 
         int NrOfWinOptions(Player player);
+
+        int FirstDiffIdx(IBoard board);
+
+        Player PlayersTurn(Player firstPlayer);
+
+        bool IsTerminal();
     }
 }

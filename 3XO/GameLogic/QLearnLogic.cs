@@ -7,16 +7,9 @@ using TicTacToe.GameLogic;
 
 namespace GameLogic
 {
-    internal class QLearnLogic<BoardType> where BoardType : class, IBoard 
-    {
-        List<QualityDescription<BoardType>> boardsAndQValues;
-
-        Stack<BoardAndFieldAndPlayer> boardsFieldPlayer;
+    internal class QLearnLogic<BoardType> where BoardType : class, IBoard
+    {       
         private readonly Action<string> logAction;
-
-        public QLearnLogic()
-        {
-        }
 
         public QLearnLogic(Action<string> logAction)
         {
@@ -25,83 +18,86 @@ namespace GameLogic
 
         internal void QLearn(IBoard board, Player player)
         {
-            this.boardsFieldPlayer = new Stack<BoardAndFieldAndPlayer>();
-            this.boardsAndQValues = new List<QualityDescription<BoardType>>();
+            this.boardAndFieldAndPlayers = new List<BoardAndFieldAndPlayer>();
 
             this.Log("Add Q Values");
-            this.AddQValue(board, player, -1, 0);
+            this.AddQValue(board, player);
 
             this.Log("Save Results ");
-            this.SaveResults(this.boardsAndQValues, "boardsAndQValues.xml");
+            this.SaveResults(this.boardAndFieldAndPlayers, "boardsFieldPlayer.xml");
         }
 
-        private void SaveResults(List<QualityDescription<BoardType>> qualityDescriptionList, string fileName)
+        private void CheckWinLoose(List<BoardAndFieldAndPlayer> boardFieldPlayer, Player playerOnTurn)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<QualityDescription<BoardType>>));
-            StreamWriter streamWriter = new StreamWriter(fileName);
-            xmlSerializer.Serialize(streamWriter, qualityDescriptionList);
-            streamWriter.Close();
-        }
+            Player boardWinner = boardFieldPlayer.Last().Board.Winner();
+            double q = 1;
 
-        private void IterateAndTest(IBoard board, Player player, int setFieldNr, int layerIdx, List<QualityDescription<BoardType>> qualityDescription, Action<IBoard, Player, List<QualityDescription<BoardType>>> checkAction)
-        {
-            if (board.Full() || board.Winner() != Player.None)
+            var boardFieldPlayerRevers = new List<BoardAndFieldAndPlayer>(boardFieldPlayer);
+            boardFieldPlayerRevers.Reverse();
+
+            for (int idx = 0; idx < boardFieldPlayerRevers.Count(); idx++)
             {
+                List<double> list = boardWinner == boardFieldPlayerRevers[idx].Player ? boardFieldPlayerRevers[idx].Wins : boardFieldPlayerRevers[idx].Loose;
+                list[boardFieldPlayerRevers[idx].FieldNr] += q;
+                q *= 0.9;
             }
-            else
-            {
-                var fieldIdxs = board.GetAllFieldIdxs();
-                foreach (var fieldIdx in fieldIdxs)
+
+            //var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
+
+            //for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
+            //{
+            //    var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
+            //    int fieldNr = boardPlayerField.FieldNr;
+            //    var boardsAndQValues = this.GetPreviousPlayerOrComputerBoardAndQValues(boardPlayerField);
+
+            //    boardsAndQValues.WinsLosses[boardPlayerField.FieldNr].Register(boardsFieldPlayerListIdx, boardWinner, boardPlayerField.Player);
+            //}
+        }
+
+        //private QualityDescription<BoardType> GetPreviousPlayerOrComputerBoardAndQValues(BoardAndFieldAndPlayer boardFieldPlayer)
+        //{
+        //    BoardType previousBoard = (BoardType)boardFieldPlayer.Board.Copy();
+        //    previousBoard.Set(boardFieldPlayer.FieldNr, Player.None);
+
+        //    return this.GetPlayerOrComputerBoardAndQValues(previousBoard);
+        //}
+
+        //private QualityDescription<BoardType> GetPlayerOrComputerBoardAndQValues(BoardType board)
+        //{
+
+        //    int indexOfBoard = this.boardsAndQValues.FindIndex(bq => bq.Board == board);
+        //    if (indexOfBoard == -1)
+        //    {
+        //        this.boardsAndQValues.Add(new QualityDescription<BoardType>(board));
+        //        indexOfBoard = this.boardsAndQValues.Count - 1;
+        //    }
+
+        //    return boardsAndQValues[indexOfBoard];
+        //}
+
+        private void AddQValue(IBoard board, Player firstPlayer)
+        {
+            this.iterateFieldsList = new List<BoardAndFieldAndPlayer>();
+
+            this.iterateFieldsList.Add(this.GetBoardAndFieldAndPlayer(board, 5, firstPlayer.Opponent()));
+
+            this.IterateFields(
+                board,
+                firstPlayer,
+                fullAction: (boardList) =>
                 {
-                    IBoard newBoard = board.Copy();
-                    if (newBoard.Get(fieldIdx) == Player.None)
-                    {
-                        newBoard.Set(fieldIdx, player);
-                        checkAction(newBoard, player, qualityDescription);
-                        this.IterateAndTest(newBoard, player.Opponent(), fieldIdx, layerIdx + 1, qualityDescription, checkAction);
-                    }
-                }
-            }
-        }
 
-        private void CheckReward(IBoard board, Player player)
-        {
-            Player boardWinner = board.Winner();
-            var boardsFieldPlayerList = this.boardsFieldPlayer.ToList();
+                },
+                winAction: (boardList, player) =>
+                {
+                    this.CheckWinLoose(boardList, player);
+                },
+                splitBoardAction: (boardList, player) =>
+                {
 
-            for (int boardsFieldPlayerListIdx = 0; boardsFieldPlayerListIdx < boardsFieldPlayerList.Count - 1; boardsFieldPlayerListIdx++)
-            {
-                var boardPlayerField = boardsFieldPlayerList[boardsFieldPlayerListIdx];
-                int fieldNr = boardPlayerField.FieldNr;
-                var boardsAndQValues = this.GetPreviousPlayerOrComputerBoardAndQValues(boardPlayerField);
+                });
 
-                boardsAndQValues.WinsLosses[boardPlayerField.FieldNr].Register(boardsFieldPlayerListIdx, boardWinner, boardPlayerField.Player);
-            }
-        }
-
-        private QualityDescription<BoardType> GetPreviousPlayerOrComputerBoardAndQValues(BoardAndFieldAndPlayer boardFieldPlayer)
-        {
-            BoardType previousBoard = (BoardType)boardFieldPlayer.Board.Copy();
-            previousBoard.Set(boardFieldPlayer.FieldNr, Player.None);
-
-            return this.GetPlayerOrComputerBoardAndQValues(previousBoard);
-        }
-
-        private QualityDescription<BoardType> GetPlayerOrComputerBoardAndQValues(BoardType board)
-        {
-
-            int indexOfBoard = this.boardsAndQValues.FindIndex(bq => bq.Board == board);
-            if (indexOfBoard == -1)
-            {
-                this.boardsAndQValues.Add(new QualityDescription<BoardType>(board));
-                indexOfBoard = this.boardsAndQValues.Count - 1;
-            }
-
-            return boardsAndQValues[indexOfBoard];
-        }
-
-        private void AddQValue(IBoard board, Player playerSet, int setFieldNr, int layerIdx)
-        {
+            /*
             boardsFieldPlayer.Push(new BoardAndFieldAndPlayer(board, setFieldNr, playerSet));
 
             int nrOfWinOptions = board.NrOfWinOptions(playerSet);
@@ -139,6 +135,7 @@ namespace GameLogic
                     }
                 }
             }
+            */
         }
 
         private void LogCalcIndex(int layerIdx, int fieldNr)
@@ -178,9 +175,73 @@ namespace GameLogic
             return boardFieldPlayer.Board.NrOfWinOptions(player);
         }
 
-        private void Log(string content)
+        private void Log(string content) => this.logAction?.Invoke(content);
+
+        private void SaveResults(List<BoardAndFieldAndPlayer> boardAndFieldAndPlayerList, string fileName)
         {
-            this.logAction?.Invoke(content);
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<BoardAndFieldAndPlayer>));
+            StreamWriter streamWriter = new StreamWriter(fileName);
+            xmlSerializer.Serialize(streamWriter, boardAndFieldAndPlayerList);
+            streamWriter.Close();
+        }
+
+        private List<BoardAndFieldAndPlayer> iterateFieldsList;
+        private void IterateFields(
+            IBoard board,
+            Player playerOnTurn,
+            Action<List<BoardAndFieldAndPlayer>> fullAction,
+            Action<List<BoardAndFieldAndPlayer>, Player> winAction,
+            Action<List<BoardAndFieldAndPlayer>, Player> splitBoardAction)
+        {
+            if (board.IsFull())
+            {
+                fullAction(this.iterateFieldsList);
+            }
+            else if (board.Winner() != Player.None)
+            {
+                winAction(this.iterateFieldsList, playerOnTurn);
+            }
+            else
+            {
+                if (board.NrOfWinOptions(Player.Player) > 1)
+                {
+                    splitBoardAction(this.iterateFieldsList, Player.Player);
+                }
+                if (board.NrOfWinOptions(Player.Computer) > 1)
+                {
+                    splitBoardAction(this.iterateFieldsList, Player.Computer);
+                }
+
+                var fieldIdxs = board.GetAllFieldIdxs();
+                foreach (var fieldIdx in fieldIdxs)
+                {
+                    IBoard newBoard = board.Copy();
+                    if (newBoard.Get(fieldIdx) == Player.None)
+                    {
+                        newBoard.Set(fieldIdx, playerOnTurn);
+
+                        this.iterateFieldsList.Add(this.GetBoardAndFieldAndPlayer(newBoard, fieldIdx, playerOnTurn));
+                        this.IterateFields(newBoard, playerOnTurn.Opponent(), fullAction, winAction, splitBoardAction);
+                        this.iterateFieldsList.RemoveAt(this.iterateFieldsList.Count - 1);
+
+                        newBoard.Set(fieldIdx, Player.None);
+                    }
+                }
+            }
+        }
+
+        List<BoardAndFieldAndPlayer> boardAndFieldAndPlayers;
+
+        private BoardAndFieldAndPlayer GetBoardAndFieldAndPlayer(IBoard board, int fieldIdx, Player playerOnTurn)
+        {
+            int indexOfBoard = this.boardAndFieldAndPlayers.FindIndex(bq => bq.Board == board);
+            if (indexOfBoard > -1)
+            {
+                return this.boardAndFieldAndPlayers[indexOfBoard];
+            }
+            
+            this.boardAndFieldAndPlayers.Add(new BoardAndFieldAndPlayer(board, fieldIdx, playerOnTurn));
+            return this.boardAndFieldAndPlayers.Last();
         }
     }
 }

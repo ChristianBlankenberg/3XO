@@ -9,8 +9,8 @@ namespace TicTacToe
 
     internal class ConsoleGame<BoardType> where BoardType : class, IBoard
     {
-        private CalculationMethod ComputerCalculationMethod = CalculationMethod.QValues;
-
+        private CalculationMethod ComputerCalculationMethod = CalculationMethod.MinMax;
+        private GameLogicMinMax gameLogicMinMax = null;
         private Game game;
 
         internal ConsoleGame(Game game)
@@ -78,17 +78,31 @@ namespace TicTacToe
             Console.ReadKey();
         }
 
-        internal void Run(Player startPlayer)
+        internal void Run(IBoard board, Player startPlayer)
         {
-            this.game.Clear();
+            this.game.SetBoard(board);
             this.PrintBoard();
+
+            this.gameLogicMinMax = new GameLogicMinMax(
+                new MinMaxDescription(
+                    Player.Player,
+                    1,
+                    Int32.MinValue,
+                    (val1, val2) => Math.Max(val1, val2),
+                    (list) => list.Max(x => x.value)),
+                new MinMaxDescription(
+                    Player.Computer,
+                    -1,
+                    Int32.MaxValue,
+                    (val1, val2) => Math.Min(val1, val2),
+                    (list) => list.Min(x => x.value)));
 
             while (!this.game.Over())
             {
-                this.Set(startPlayer, this.GetCalculationMethod(startPlayer), this.game.GetBoard());
+                this.Set(this.game.GetBoard(), startPlayer, this.GetCalculationMethod(startPlayer));
                 if (!this.game.Over())
                 {
-                    this.Set(startPlayer.Opponent(), this.GetCalculationMethod(startPlayer.Opponent()), this.game.GetBoard());
+                    this.Set(this.game.GetBoard(), startPlayer.Opponent(), this.GetCalculationMethod(startPlayer.Opponent()));
                 }
             }
         }
@@ -106,14 +120,14 @@ namespace TicTacToe
             return CalculationMethod.Random;
         }
 
-        private void Set(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
+        private void Set(IBoard board, Player playerOrComputer, CalculationMethod calculationMethod)
         {
-            ICoordinates coordinates = this.GetCoordinates(playerOrComputer, calculationMethod, board);            
+            ICoordinates coordinates = this.GetCoordinates(board, playerOrComputer, calculationMethod);            
             this.game.Set(coordinates.FieldNr, playerOrComputer);
             this.PrintBoard();
         }
 
-        private ICoordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod, IBoard board)
+        private ICoordinates GetCoordinates(IBoard board, Player playerOrComputer, CalculationMethod calculationMethod)
         {
             switch (calculationMethod)
             {
@@ -127,6 +141,8 @@ namespace TicTacToe
                     return this.GetCoordinatesFromNeuronalNet();
                 case CalculationMethod.QValues:
                     return this.GetCoordinatesQValues(playerOrComputer, board);
+                case CalculationMethod.MinMax:
+                    return new Coordinates(this.gameLogicMinMax.GetFavouriteFieldIdx(board, playerOrComputer));
             }
 
             throw new NotImplementedException();
