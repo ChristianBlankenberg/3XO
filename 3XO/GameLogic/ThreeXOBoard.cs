@@ -9,8 +9,30 @@ namespace TicTacToe.GameLogic
     public class ThreeXOBoard : IBoard
     {
         private List<Player> boardFields;
-
         private int? hashCode = null;
+
+        public string BoardFieldsString
+        {
+            get => this.ToString();
+            set => this.SetBoardFields(this.FromString(value));
+        }
+
+        public Player StartPlayer { get; set; }
+
+        public override string ToString()
+            => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
+
+        public ThreeXOBoard(string boardString, Player startPlayer) : this()
+        {
+            this.StartPlayer = startPlayer;
+            this.SetBoardFields(Enumerable.Range(0, 9).Select(i => Player.None).ToList());
+            var fields = boardString.Split(new char[] { ';' });
+            for (int fieldNr = 0; fieldNr < fields.Length; fieldNr++)
+            {
+                this.Set(fieldNr, fields[fieldNr].PlayerFromString());
+            }
+        }
+
         public override int GetHashCode()
         {
             if (!this.hashCode.HasValue)
@@ -21,27 +43,6 @@ namespace TicTacToe.GameLogic
             return this.hashCode.Value;
         }
 
-        public string BoardFieldsString
-        {
-            get => this.ToString();
-            set
-            {
-                this.SetBoardFields(this.FromString(value));
-            }
-        }
-
-        public override string ToString()
-            => string.Join(";", Enumerable.Range(0, 9).Select(field => this.Get(field).AsString()));
-
-        public ThreeXOBoard(string boardString) : this()
-        {
-            this.SetBoardFields(Enumerable.Range(0, 9).Select(i => Player.None).ToList());
-            var fields = boardString.Split(new char[] { ';' });
-            for (int fieldNr = 0; fieldNr < fields.Length; fieldNr++)
-            {
-                this.Set(fieldNr, fields[fieldNr].PlayerFromString());
-            }
-        }
 
         private void SetBoardFields(List<Player> players)
         {
@@ -109,16 +110,18 @@ namespace TicTacToe.GameLogic
             return nrOfWins;
         }
 
-        internal static ThreeXOBoard Empty()
+        internal static ThreeXOBoard Empty(Player startPlayer)
         {
             ThreeXOBoard result = new ThreeXOBoard();
+            result.StartPlayer = startPlayer;
             result.SetBoardFields(Enumerable.Range(0, 9).Select(i => Player.None).ToList());
             return result;
         }
 
-        internal static ThreeXOBoard Random()
+        internal static ThreeXOBoard Random(Player startPlayer)
         {
             ThreeXOBoard board = new ThreeXOBoard();
+            board.StartPlayer = startPlayer;
             var list = Enumerable.Range(0, 9).Select(x => Player.None).ToList();
             list.ForEach(p => p.Random());
             board.SetBoardFields(list);
@@ -128,7 +131,7 @@ namespace TicTacToe.GameLogic
 
         public IBoard Copy()
         {
-            ThreeXOBoard board = ThreeXOBoard.Empty();
+            ThreeXOBoard board = ThreeXOBoard.Empty(this.StartPlayer);
             board.SetBoardFields(new List<Player>(this.boardFields));
             return board;
         }
@@ -157,11 +160,8 @@ namespace TicTacToe.GameLogic
         internal static List<int> DiagonaleLOURUIndexes()
             => new List<int> { 6, 4, 2, };
 
-        public Player Get(int fieldNr)
-            => this.Get(new Coordinates(fieldNr));
-
-        internal Player Get(Coordinates coordinates)
-            => this.boardFields[coordinates.FieldNr];
+        public Player Get(int fieldIdx)
+            => this.boardFields[fieldIdx];
 
         public void Set(int fieldNr, Player playerOrComputer)
         {
@@ -169,10 +169,8 @@ namespace TicTacToe.GameLogic
             this.UpdateValues();
         }
 
-        public void Set(ICoordinates coordinates, Player playerOrComputer) => this.Set(coordinates.FieldNr, playerOrComputer);
-
-        public bool IsEmpty(ICoordinates coordinates)
-            => this.boardFields[coordinates.FieldNr] == Player.None;
+        public bool IsEmpty(int fieldIdx)
+            => this.boardFields[fieldIdx] == Player.None;
 
         public List<Player> AllFields()
             => Enumerable.Range(0, 9).Select(idx => this.Get(idx)).ToList();
@@ -264,11 +262,11 @@ namespace TicTacToe.GameLogic
         private List<string> GetField(int x, int y)
             => this.boardFields[new Coordinates(x, y).FieldNr].AsStringList();
 
-        public List<int> GetAllFieldIdxs() => Enumerable.Range(0, 9).ToList();
+        public List<int> AllFieldIdxs() => Enumerable.Range(0, 9).ToList();
 
         public int FirstDiffIdx(IBoard board)
         {
-            var allFieldIdxs = this.GetAllFieldIdxs();
+            var allFieldIdxs = this.AllFieldIdxs();
             foreach(var fieldIdx in allFieldIdxs)
             {
                 if (this.Get(fieldIdx) != board.Get(fieldIdx))
@@ -293,11 +291,38 @@ namespace TicTacToe.GameLogic
         }
 
         public bool IsTerminal() => this.IsFull() || this.Winner() != Player.None;
-       
+
+        public double GetValue()
+        {
+            if (this.Winner() == Player.Player)
+            {
+                return 1;
+            }
+            else if (this.Winner() == Player.Computer)
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public int NrOfVariants() => this.GetEmptyFieldIdxs().Count();
+
+        private Stack<int> lastSetIdx = new Stack<int>();
+        public void SetVariant(int nr)
+        {
+            this.lastSetIdx.Push(this.GetEmptyFieldIdxs()[nr]);
+            this.Set(this.lastSetIdx.Peek(), this.PlayersTurn(this.StartPlayer));            
+        }
+
+        public void ReSetVariant() => this.Set(this.lastSetIdx.Pop(), Player.None);
+
+        public IBoardBase GetActVariant() => this;
 
         private ThreeXOBoard()
         {
-            //=> this.BoardFields = Enumerable.Range(0, 9).Select(i => Player.None).ToList();
         }
     }
 }

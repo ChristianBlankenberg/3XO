@@ -13,6 +13,8 @@ namespace TicTacToe.GameLogic
 
         private GameNeuronalNet gameNeuronal;
 
+        public Player StartPlayer { get; }
+
         internal bool Over()
         {
             if (this.board.IsFull())
@@ -25,9 +27,9 @@ namespace TicTacToe.GameLogic
 
         internal void SetBoard(IBoard board) => this.board = board;
 
-        internal void Clear() => this.board = ThreeXOBoard.Empty();
+        internal void Clear() => this.board = ThreeXOBoard.Empty(this.StartPlayer);
 
-        internal bool IsEmpty(ICoordinates coordinates) => this.board.IsEmpty(coordinates);
+        internal bool IsEmpty(int fieldIdx) => this.board.IsEmpty(fieldIdx);
 
         internal void Set(int fieldIdx, Player playerOrComputer) => this.board.Set(fieldIdx, playerOrComputer);
 
@@ -50,9 +52,10 @@ namespace TicTacToe.GameLogic
 
         internal string BoardToString() => this.board.ToString();
 
-        internal Game(ThreeXOBoard board)
+        internal Game(ThreeXOBoard board, Player startPlayer)
         {
             this.board = board;
+            this.StartPlayer = startPlayer;
             this.gameNeuronal = new GameNeuronalNet();
             this.gameNeuronal.Init();
         }

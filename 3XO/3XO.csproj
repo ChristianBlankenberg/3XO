@@ -44,7 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleGame.cs" />
+    <Compile Include="GameLogic\GameLogicAlphaBetaPrune.cs" />
     <Compile Include="GameLogic\GameLogicMinMax.cs" />
+    <Compile Include="GameLogic\IBoardBase.cs" />
+    <Compile Include="GameLogic\MinMaxDescriptionAlphaBetaPrune.cs" />
     <Compile Include="GameLogic\MinMaxDescription.cs" />
     <Compile Include="GameLogic\ThreeXOBoard.cs" />
     <Compile Include="GameLogic\BoardAndFieldAndPlayer.cs" />

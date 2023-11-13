@@ -21,7 +21,7 @@ namespace GameLogic
             this.Player = player;
             this.Opponent = player.Opponent();
 
-            var allFieldsCount = board.GetAllFieldIdxs().Count;
+            var allFieldsCount = board.AllFieldIdxs().Count;
 
             this.Wins = new List<double>(Enumerable.Repeat(0.0, allFieldsCount));
             this.Loose = new List<double>(Enumerable.Repeat(0.0, allFieldsCount));

@@ -11,6 +11,7 @@ namespace TicTacToe
     {
         private CalculationMethod ComputerCalculationMethod = CalculationMethod.MinMax;
         private GameLogicMinMax gameLogicMinMax = null;
+        private GameLogicAlphaBetaPrune gameLogicAlphaBetaPrune = null;
         private Game game;
 
         internal ConsoleGame(Game game)
@@ -83,19 +84,23 @@ namespace TicTacToe
             this.game.SetBoard(board);
             this.PrintBoard();
 
-            this.gameLogicMinMax = new GameLogicMinMax(
-                new MinMaxDescription(
+            this.gameLogicMinMax = new GameLogicMinMax(Player.Computer, Player.Player);
+
+            this.gameLogicAlphaBetaPrune = new GameLogicAlphaBetaPrune(
+                new MinMaxDescriptionAlphaBetaPrune(
                     Player.Player,
-                    1,
-                    Int32.MinValue,
+                    int.MinValue,
                     (val1, val2) => Math.Max(val1, val2),
-                    (list) => list.Max(x => x.value)),
-                new MinMaxDescription(
+                    (list) => list.Max(x => x.value),
+                    true,
+                    false),
+                new MinMaxDescriptionAlphaBetaPrune(
                     Player.Computer,
-                    -1,
-                    Int32.MaxValue,
+                    int.MaxValue,
                     (val1, val2) => Math.Min(val1, val2),
-                    (list) => list.Min(x => x.value)));
+                    (list) => list.Min(x => x.value),
+                    false,
+                    true));
 
             while (!this.game.Over())
             {
@@ -143,6 +148,8 @@ namespace TicTacToe
                     return this.GetCoordinatesQValues(playerOrComputer, board);
                 case CalculationMethod.MinMax:
                     return new Coordinates(this.gameLogicMinMax.GetFavouriteFieldIdx(board, playerOrComputer));
+                case CalculationMethod.AlphaBetaPrune:
+                    return new Coordinates(this.gameLogicAlphaBetaPrune.GetFavouriteFieldIdx(board, playerOrComputer));
             }
 
             throw new NotImplementedException();

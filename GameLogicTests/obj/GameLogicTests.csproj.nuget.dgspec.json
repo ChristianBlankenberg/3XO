@@ -1,0 +1,121 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Daten\\Privat\\3XO\\GameLogicTests\\GameLogicTests.csproj": {}
+  },
+  "projects": {
+    "C:\\Daten\\Privat\\3XO\\3XO\\3XO.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Daten\\Privat\\3XO\\3XO\\3XO.csproj",
+        "projectName": "3XO",
+        "projectPath": "C:\\Daten\\Privat\\3XO\\3XO\\3XO.csproj",
+        "frameworks": {
+          "net481": {
+            "projectReferences": {
+              "C:\\Daten\\Privat\\NeuronalNetwork\\NeuronalesNetzBackpropagation\\NeuronalesNetz.csproj": {
+                "projectPath": "C:\\Daten\\Privat\\NeuronalNetwork\\NeuronalesNetzBackpropagation\\NeuronalesNetz.csproj"
+              }
+            }
+          }
+        }
+      },
+      "frameworks": {
+        "net481": {}
+      }
+    },
+    "C:\\Daten\\Privat\\3XO\\GameLogicTests\\GameLogicTests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Daten\\Privat\\3XO\\GameLogicTests\\GameLogicTests.csproj",
+        "projectName": "GameLogicTests",
+        "projectPath": "C:\\Daten\\Privat\\3XO\\GameLogicTests\\GameLogicTests.csproj",
+        "packagesPath": "C:\\Users\\cblankenberg\\.nuget\\packages\\",
+        "outputPath": "C:\\Daten\\Privat\\3XO\\GameLogicTests\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\cblankenberg\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {
+              "C:\\Daten\\Privat\\3XO\\3XO\\3XO.csproj": {
+                "projectPath": "C:\\Daten\\Privat\\3XO\\3XO\\3XO.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "MSTest.TestAdapter": {
+              "target": "Package",
+              "version": "[2.2.3, )"
+            },
+            "MSTest.TestFramework": {
+              "target": "Package",
+              "version": "[2.2.3, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[16.9.4, )"
+            },
+            "coverlet.collector": {
+              "target": "Package",
+              "version": "[3.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.414\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Daten\\Privat\\NeuronalNetwork\\NeuronalesNetzBackpropagation\\NeuronalesNetz.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Daten\\Privat\\NeuronalNetwork\\NeuronalesNetzBackpropagation\\NeuronalesNetz.csproj",
+        "projectName": "NeuronalesNetz",
+        "projectPath": "C:\\Daten\\Privat\\NeuronalNetwork\\NeuronalesNetzBackpropagation\\NeuronalesNetz.csproj",
+        "frameworks": {
+          "net472": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {}
+      }
+    }
+  }
+}

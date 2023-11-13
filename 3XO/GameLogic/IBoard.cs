@@ -2,21 +2,21 @@
 
 namespace TicTacToe.GameLogic
 {
-    public interface IBoard
+    public interface IBoard : IBoardBase
     {
         bool IsFull();
 
-        bool IsEmpty(ICoordinates coordinates);
-
         Player Winner();
 
-        Player Get(int fieldNr);
+        bool IsEmpty(int fieldIdx);
+
+        List<int> AllFieldIdxs();
+
+        Player Get(int fieldIdx);
 
         void Set(int fieldIdx, Player playerOrComputer);
 
         List<Player> AllFields();
-
-        List<int> GetAllFieldIdxs();
 
         List<string> Print();
 
@@ -30,6 +30,5 @@ namespace TicTacToe.GameLogic
 
         Player PlayersTurn(Player firstPlayer);
 
-        bool IsTerminal();
     }
 }

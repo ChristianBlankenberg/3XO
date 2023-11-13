@@ -14,6 +14,8 @@
 
         QValues,
 
-        MinMax
+        MinMax,
+
+        AlphaBetaPrune
     }
 }

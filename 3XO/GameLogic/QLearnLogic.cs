@@ -16,12 +16,12 @@ namespace GameLogic
             this.logAction = logAction;
         }
 
-        internal void QLearn(IBoard board, Player player)
+        internal void QLearn(IBoard board, Player startPlayer)
         {
             this.boardAndFieldAndPlayers = new List<BoardAndFieldAndPlayer>();
 
             this.Log("Add Q Values");
-            this.AddQValue(board, player);
+            this.AddQValue(board, startPlayer);
 
             this.Log("Save Results ");
             this.SaveResults(this.boardAndFieldAndPlayers, "boardsFieldPlayer.xml");
@@ -75,15 +75,15 @@ namespace GameLogic
         //    return boardsAndQValues[indexOfBoard];
         //}
 
-        private void AddQValue(IBoard board, Player firstPlayer)
+        private void AddQValue(IBoard board, Player startPlayer)
         {
             this.iterateFieldsList = new List<BoardAndFieldAndPlayer>();
 
-            this.iterateFieldsList.Add(this.GetBoardAndFieldAndPlayer(board, 5, firstPlayer.Opponent()));
+            this.iterateFieldsList.Add(this.GetBoardAndFieldAndPlayer(board, 5, startPlayer.Opponent()));
 
             this.IterateFields(
                 board,
-                firstPlayer,
+                startPlayer,
                 fullAction: (boardList) =>
                 {
 
@@ -212,7 +212,7 @@ namespace GameLogic
                     splitBoardAction(this.iterateFieldsList, Player.Computer);
                 }
 
-                var fieldIdxs = board.GetAllFieldIdxs();
+                var fieldIdxs = board.AllFieldIdxs();
                 foreach (var fieldIdx in fieldIdxs)
                 {
                     IBoard newBoard = board.Copy();
