@@ -15,26 +15,12 @@ namespace GameLogicTests
         [TestMethod]
         public void TestAlphaBetaPruneClassTest()
         {
-            AlphaBetaPruneClass alphaBetaPruneClass = new AlphaBetaPruneClass(
-                new MinMaxDescriptionAlphaBetaPrune(
-                    Player.Player,
-                    int.MinValue,
-                    (val1, val2) => Math.Max(val1, val2),
-                    (list) => list.Max(x => x.value),
-                    true,
-                    false),
-                new MinMaxDescriptionAlphaBetaPrune(
-                    Player.Computer,
-                    int.MaxValue,
-                    (val1, val2) => Math.Min(val1, val2),
-                    (list) => list.Min(x => x.value),
-                    false,
-                    true));
+            AlphaBetaPruneClass alphaBetaPruneClass = new AlphaBetaPruneClass(Player.Computer, Player.Player);
 
-            alphaBetaPruneClass.GetValue(this.GetTestBinTreeNodes2());
+            alphaBetaPruneClass.GetValue(this.GetTestBinTreeNodes2(), Player.Computer);
         }
 
-        private BinTreeNode GetTestBinTreeNodes1()
+        private IBoardBase GetTestBinTreeNodes1()
         {
             // https://4.bp.blogspot.com/_nWD8gSvCXFk/TOO5im5skTI/AAAAAAAACpE/aRoFjXx-DFI/s1600/Dibujo1.bmp
 
@@ -59,7 +45,7 @@ namespace GameLogicTests
             new BinTreeNode(new BinTreeNode(48), new BinTreeNode(10)))));
         }
 
-        private BinTreeNode GetTestBinTreeNodes2()
+        private IBoardBase GetTestBinTreeNodes2()
         {
             // https://www.youtube.com/watch?v=_i-lZcbWkps
             return

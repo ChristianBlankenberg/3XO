@@ -6,13 +6,11 @@
 
         None,
 
-        Console,
+        Input,
 
         Random,
 
         NeuronalNet,
-
-        QValues,
 
         MinMax,
 

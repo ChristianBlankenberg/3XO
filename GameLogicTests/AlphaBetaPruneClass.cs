@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GameLogic;
-using TicTacToe.GameLogic;
-
-namespace GameLogicTests
+﻿namespace GameLogicTests
 {
+    using System;
+    using TicTacToe.GameLogic;
+
     public class BinTreeNode : IBoardBase
     {
         public int Value { get; set; }
@@ -43,70 +38,6 @@ namespace GameLogicTests
         public IBoardBase GetActVariant() => this.actVariante == 0 ? this.Left : this.actVariante == 1 ? this.Right : null;
 
         public void ReSetVariant() => this.actVariante = -1;
-    }
-
-    public class AlphaBetaPruneClass
-    {
-        private double alpha;
-        private double beta;
-
-        private readonly MinMaxDescriptionAlphaBetaPrune minMaxP1;
-        private readonly MinMaxDescriptionAlphaBetaPrune minMaxP2;
-
-
-        public AlphaBetaPruneClass(MinMaxDescriptionAlphaBetaPrune minMaxP1, MinMaxDescriptionAlphaBetaPrune minMaxP2)
-        {
-            this.minMaxP1 = minMaxP1;
-            this.minMaxP2 = minMaxP2;
-        }
-
-        public double GetValue(BinTreeNode binTreeNode)
-        {
-            this.alpha = int.MinValue;
-            this.beta = int.MaxValue;
-
-            return this.GetValueAlphaBetaPrune(binTreeNode, 0, alpha, beta, this.minMaxP1);
-        }
-
-        private double GetValueAlphaBetaPrune(IBoardBase binTreeNode, int depth, double alpha, double beta, MinMaxDescriptionAlphaBetaPrune minMaxDescriptionAlphaBetaPrune)
-        {
-            if (binTreeNode.IsTerminal())
-            {
-                return binTreeNode.GetValue();
-            }
-            else
-            {
-                double value = minMaxDescriptionAlphaBetaPrune.StartValue;
-                var nrOfVariants = binTreeNode.NrOfVariants();
-
-                for(int variante = 0; variante < nrOfVariants; variante++)
-                {
-                    binTreeNode.SetVariant(variante);
-                                        
-                    if (minMaxDescriptionAlphaBetaPrune == this.minMaxP1)
-                    {
-                        // Max
-                        value = minMaxDescriptionAlphaBetaPrune.MinMaxFunc(value, this.GetValueAlphaBetaPrune(binTreeNode.GetActVariant(), depth + 1, alpha, beta, this.minMaxP2));
-                        alpha = Math.Max(alpha, value);
-                    }
-                    else if (minMaxDescriptionAlphaBetaPrune == this.minMaxP2)
-                    {
-                        // Min
-                        value = minMaxDescriptionAlphaBetaPrune.MinMaxFunc(value, this.GetValueAlphaBetaPrune(binTreeNode.GetActVariant(), depth + 1, alpha, beta, this.minMaxP1));
-                        beta = Math.Min(beta, value);
-                    }
-
-                    binTreeNode.ReSetVariant();
-
-                    if (alpha >= beta)
-                    {
-                        break;
-                    }
-                }
-
-                return value;
-            }
-        }
     }
 
     /*

@@ -44,13 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleGame.cs" />
-    <Compile Include="GameLogic\GameLogicAlphaBetaPrune.cs" />
-    <Compile Include="GameLogic\GameLogicMinMax.cs" />
+    <Compile Include="GameLogic\AlphaBetaPruneClass.cs" />
+    <Compile Include="GameLogic\IMinMaxValueLogicClass.cs" />
+    <Compile Include="GameLogic\MinMaxLogicClass.cs" />
     <Compile Include="GameLogic\IBoardBase.cs" />
-    <Compile Include="GameLogic\MinMaxDescriptionAlphaBetaPrune.cs" />
-    <Compile Include="GameLogic\MinMaxDescription.cs" />
     <Compile Include="GameLogic\ThreeXOBoard.cs" />
-    <Compile Include="GameLogic\BoardAndFieldAndPlayer.cs" />
     <Compile Include="GameLogic\CalculationMethod.cs" />
     <Compile Include="GameLogic\Coordinates.cs" />
     <Compile Include="GameLogic\Game.cs" />
@@ -58,9 +56,6 @@
     <Compile Include="GameLogic\IBoard.cs" />
     <Compile Include="GameLogic\ICoordinates.cs" />
     <Compile Include="GameLogic\Player.cs" />
-    <Compile Include="GameLogic\QLearnLogic.cs" />
-    <Compile Include="GameLogic\QualityDescription.cs" />
-    <Compile Include="GameLogic\WinsLossesSplitBoards.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -5,8 +5,7 @@ namespace TicTacToe
     using System.Collections.Generic;
     using GameLogic;
     using global::GameLogic;
-    using TicTacToe.GameLogic;
-
+    
     class Program
     {
         static void Main(string[] args)
@@ -21,8 +20,6 @@ namespace TicTacToe
             {
                 ("Run Game (Player begins)", () => { this.RunGame(Player.Player); }),
                 ("Run Game (Computer begins)", () => { this.RunGame(Player.Computer); }),
-                ("Q-Learn", () => { this.QLearn(ThreeXOBoard.Empty(Player.Player), Player.Player); }),
-                ("Q-Learn (Short)", () => { this.QLearn(new ThreeXOBoard("X;O;X;O;X;O; ; ; ", Player.Player), Player.Player); }),
                 ("Test", () => { this.Test(); }),
                 ("Debug", () => { this.Debug(); }),
             }) ;
@@ -38,8 +35,6 @@ namespace TicTacToe
             Console.WriteLine(" --- 3XO --- ");
             Console.WriteLine("");
             Console.WriteLine(" 1 - Run Game ");
-            Console.WriteLine(" 2 - Q Learn  ");
-            Console.WriteLine(" 3 - Q Learn (Short) ");
             Console.WriteLine(" 4 - Test ");
             Console.WriteLine(" 5 - Debug ");
 
@@ -53,14 +48,6 @@ namespace TicTacToe
                 case ConsoleKey.NumPad1:
                     this.RunGame(Player.Player);
                     break;
-                case ConsoleKey.D2:
-                case ConsoleKey.NumPad2:
-                    this.QLearn(ThreeXOBoard.Empty(Player.Player), Player.Player);
-                    break;
-                case ConsoleKey.D3:
-                case ConsoleKey.NumPad3:
-                    this.QLearn(new ThreeXOBoard("X;O;X;O;X;O; ; ; ", Player.Player), Player.Player);
-                    break;
                 case ConsoleKey.D4:
                 case ConsoleKey.NumPad4:
                     this.Test();
@@ -72,19 +59,10 @@ namespace TicTacToe
             }
         }
 
-
-        private void QLearn(ThreeXOBoard board, Player startPlayer)
-        {
-            QLearnLogic<ThreeXOBoard> qLearnLogic = new QLearnLogic<ThreeXOBoard>((s) => Console.WriteLine(s));
-            qLearnLogic.QLearn(board, startPlayer);
-
-            Console.ReadLine();
-        }
-
         private void Debug()
         {
             ConsoleGame<ThreeXOBoard> consoleGame = new ConsoleGame<ThreeXOBoard>(new Game(ThreeXOBoard.Empty(Player.Computer), Player.Computer));
-            consoleGame.Run(new ThreeXOBoard("X;X;O;X;O; ; ; ; ", Player.Computer), startPlayer: Player.Computer);
+            consoleGame.Run();
 
             Console.ReadLine();
         }
@@ -92,7 +70,7 @@ namespace TicTacToe
         private void RunGame(Player startPlayer)
         {
             ConsoleGame<ThreeXOBoard> consoleGame = new ConsoleGame<ThreeXOBoard>(new Game(ThreeXOBoard.Empty(startPlayer), startPlayer));
-            consoleGame.Run(ThreeXOBoard.Empty(startPlayer), startPlayer: startPlayer);
+            consoleGame.Run();
 
             Console.ReadLine();
         }
