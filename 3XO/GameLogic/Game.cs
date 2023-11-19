@@ -41,10 +41,10 @@
 
             while (!this.Over())
             {
-                this.Set(this.StartPlayer, this.GetCalculationMethod(this.StartPlayer));
+                this.Set(this.GetCalculationMethod(this.StartPlayer));
                 if (!this.Over())
                 {
-                    this.Set(this.StartPlayer.Opponent(), this.GetCalculationMethod(this.StartPlayer.Opponent()));
+                    this.Set(this.GetCalculationMethod(this.StartPlayer.Opponent()));
                 }
             }
         }
@@ -58,7 +58,7 @@
 
                 foreach (var index in ThreeXOBoard.SpalteIndexes(spalte))
                 {
-                    this.Set(index, Player.Player);
+                    this.board.Set(index, Player.Player);
                 }
 
                 this.PrintBoard();
@@ -71,7 +71,7 @@
 
                 foreach (var index in ThreeXOBoard.ReiheIndexes(reihe))
                 {
-                    this.Set(index, Player.Player);
+                    this.board.Set(index, Player.Player);
                 }
 
                 this.PrintBoard();
@@ -82,7 +82,7 @@
 
             foreach (var index in ThreeXOBoard.DiagonaleLIUROIndexes())
             {
-                this.Set(index, Player.Player);
+                this.board.Set(index, Player.Player);
             }
 
             this.PrintBoard();
@@ -92,21 +92,14 @@
 
             foreach (var index in ThreeXOBoard.DiagonaleLOURUIndexes())
             {
-                this.Set(index, Player.Player);
+                this.board.Set(index, Player.Player);
             }
 
             this.PrintBoard();
             pauseFinished();
         }
 
-        private void Set(Player playerOrComputer, CalculationMethod calculationMethod)
-        {
-            ICoordinates coordinates = this.GetCoordinates(playerOrComputer, calculationMethod);
-            this.Set(coordinates.FieldNr, playerOrComputer);
-            this.PrintBoard();
-        }
-
-        private ICoordinates GetCoordinates(Player playerOrComputer, CalculationMethod calculationMethod)
+        private ICoordinates GetCoordinates(CalculationMethod calculationMethod)
         {
             switch (calculationMethod)
             {
@@ -119,11 +112,9 @@
                 case CalculationMethod.NeuronalNet:
                     return this.GetCoordinatesFromNeuronalNet();
                 case CalculationMethod.MinMax:
-                    return new Coordinates(this.GetMaxValueFieldIdx(board, playerOrComputer, this.gameLogicMinMax));
-                //return new Coordinates(this.gameLogicMinMax.GetFavouriteFieldIdx(board, playerOrComputer));
+                    return new Coordinates(GameLogic.GetMaxValueFieldIdx(board, this.gameLogicMinMax));
                 case CalculationMethod.AlphaBetaPrune:
-                    return new Coordinates(this.GetMaxValueFieldIdx(board, playerOrComputer, this.gameLogicAlphaBetaPrune));
-                    //return new Coordinates(this.gameLogicAlphaBetaPrune.GetFavouriteFieldIdx(board, playerOrComputer));
+                    return new Coordinates(GameLogic.GetMaxValueFieldIdx(board, this.gameLogicAlphaBetaPrune));
             }
 
             throw new NotImplementedException();
@@ -150,31 +141,20 @@
             return new Coordinates(emptyFieldIdxs[random.Next(0, emptyFieldIdxs.Count)]);
         }
 
-        private int GetMaxValueFieldIdx(IBoard board, Player player, IMinMaxValueLogicClass minMaxValueLogicClass)
-        {
-            var emptyFieldIdxs = board.GetEmptyFieldIdxs();
-            List<(int idx, double value)> idxAndValue = new List<(int idx, double value)>();
-
-            foreach (var emptyFieldIdx in emptyFieldIdxs)
-            {
-                board.Set(emptyFieldIdx, player);
-                idxAndValue.Add((emptyFieldIdx, minMaxValueLogicClass.GetValue(board, player.Opponent(), 0)));
-                board.Set(emptyFieldIdx, Player.None);
-            }
-
-            var minMaxValue = player == MaxPlayer ? idxAndValue.Max(x => x.value) : player == MinPlayer ? idxAndValue.Min(x => x.value) : 0;
-            var minMaxValuesAndIdxs = idxAndValue.Where(x => x.value == minMaxValue).ToList();
-
-            return minMaxValuesAndIdxs[random.Next(0, minMaxValuesAndIdxs.Count)].idx;
-        }
-
         private bool Over() => this.board.IsFull() ? true : this.board.Winner() != Player.None;
 
         private void Clear() => this.board = ThreeXOBoard.Empty(this.StartPlayer);
 
         private bool IsEmpty(int fieldIdx) => this.board.IsEmpty(fieldIdx);
 
-        private void Set(int fieldIdx, Player playerOrComputer) => this.board.Set(fieldIdx, playerOrComputer);
+        private void Set(int fieldIdx) => this.board.Set(fieldIdx);
+
+        private void Set(CalculationMethod calculationMethod)
+        {
+            ICoordinates coordinates = this.GetCoordinates(calculationMethod);
+            this.Set(coordinates.FieldNr);
+            this.PrintBoard();
+        }
 
         private void PrintBoard() => this.outputAction(this.board.Print());
 

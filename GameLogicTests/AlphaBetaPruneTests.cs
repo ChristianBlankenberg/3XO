@@ -17,7 +17,7 @@ namespace GameLogicTests
         {
             AlphaBetaPruneClass alphaBetaPruneClass = new AlphaBetaPruneClass(Player.Computer, Player.Player);
 
-            alphaBetaPruneClass.GetValue(this.GetTestBinTreeNodes2(), Player.Computer);
+            alphaBetaPruneClass.GetValue(this.GetTestBinTreeNodes2());
         }
 
         private IBoardBase GetTestBinTreeNodes1()

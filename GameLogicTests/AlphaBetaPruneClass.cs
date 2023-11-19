@@ -38,6 +38,8 @@
         public IBoardBase GetActVariant() => this.actVariante == 0 ? this.Left : this.actVariante == 1 ? this.Right : null;
 
         public void ReSetVariant() => this.actVariante = -1;
+
+        public Player PlayersTurn() => Player.None;
     }
 
     /*

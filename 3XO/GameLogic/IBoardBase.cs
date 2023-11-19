@@ -15,5 +15,7 @@ namespace TicTacToe.GameLogic
         IBoardBase GetActVariant();
 
         void ReSetVariant();
+
+        Player PlayersTurn();
     }
 }

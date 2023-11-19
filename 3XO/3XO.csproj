@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="ConsoleGame.cs" />
     <Compile Include="GameLogic\AlphaBetaPruneClass.cs" />
+    <Compile Include="GameLogic\BoardIterator.cs" />
+    <Compile Include="GameLogic\GameLogic.cs" />
     <Compile Include="GameLogic\IMinMaxValueLogicClass.cs" />
     <Compile Include="GameLogic\MinMaxLogicClass.cs" />
     <Compile Include="GameLogic\IBoardBase.cs" />

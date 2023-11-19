@@ -163,6 +163,8 @@ namespace TicTacToe.GameLogic
         public Player Get(int fieldIdx)
             => this.boardFields[fieldIdx];
 
+        public void Set(int fieldNr) => this.Set(fieldNr, this.PlayersTurn());
+
         public void Set(int fieldNr, Player playerOrComputer)
         {
             this.boardFields[fieldNr] = playerOrComputer;
@@ -277,6 +279,8 @@ namespace TicTacToe.GameLogic
 
             return -1;
         }
+
+        public Player PlayersTurn() => this.PlayersTurn(this.StartPlayer);
 
         public Player PlayersTurn(Player firstPlayer)
         {

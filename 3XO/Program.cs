@@ -35,6 +35,7 @@ namespace TicTacToe
             Console.WriteLine(" --- 3XO --- ");
             Console.WriteLine("");
             Console.WriteLine(" 1 - Run Game ");
+            Console.WriteLine(" 2 - Create Neuronal Net Training Data");
             Console.WriteLine(" 4 - Test ");
             Console.WriteLine(" 5 - Debug ");
 
@@ -48,6 +49,12 @@ namespace TicTacToe
                 case ConsoleKey.NumPad1:
                     this.RunGame(Player.Player);
                     break;
+
+                case ConsoleKey.D2:
+                case ConsoleKey.NumPad2:
+                    this.CreateNNTrainingData(Player.Player);
+                    break;
+
                 case ConsoleKey.D4:
                 case ConsoleKey.NumPad4:
                     this.Test();
@@ -57,6 +64,18 @@ namespace TicTacToe
                     this.Debug();
                     break;
             }
+        }
+
+        private void CreateNNTrainingData(Player firstPlayer)
+        {
+            BoardIterator boardIterator = new BoardIterator();
+            AlphaBetaPruneClass alphaBetaPruneClass = new AlphaBetaPruneClass(Player.Player, Player.Computer);
+
+            boardIterator.Iterate(ThreeXOBoard.Empty(firstPlayer), 0,
+                (boardIteration, depth) =>
+                {             
+                    Console.WriteLine($"{boardIteration.ToString()} : {GameLogic.GameLogic.GetMaxValueFieldIdx(boardIteration as IBoard, alphaBetaPruneClass)}");
+                });                
         }
 
         private void Debug()

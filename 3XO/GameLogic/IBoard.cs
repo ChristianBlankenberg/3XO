@@ -14,7 +14,9 @@ namespace TicTacToe.GameLogic
 
         Player Get(int fieldIdx);
 
-        void Set(int fieldIdx, Player playerOrComputer);
+        void Set(int fieldIdx);
+
+        void Set(int fieldIdx, Player player);
 
         List<Player> AllFields();
 
