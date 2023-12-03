@@ -32,5 +32,6 @@ namespace TicTacToe.GameLogic
 
         Player PlayersTurn(Player firstPlayer);
 
+        void SwitchPlayers();
     }
 }

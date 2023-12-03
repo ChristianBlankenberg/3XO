@@ -129,7 +129,15 @@
                     val == 1 ? Player.Player :
                         Player.Unknown;
 
-        internal static Player Opponent(this Player player) => player == Player.Player ? Player.Computer : Player.Player;
+        internal static Player Opponent(this Player player)
+        {
+            if (player != Player.None)
+            {
+                return player == Player.Player ? Player.Computer : Player.Player;
+            }
+
+            return player;
+        }
 
         internal static void Random(this Player player)
         {

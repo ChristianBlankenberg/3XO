@@ -30,7 +30,7 @@ namespace TicTacToe.GameLogic
 
             for (int i = 0; i < 9; i++)
             {
-                trainingsMuster.Add(new TraininsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
+                trainingsMuster.Add(new TrainingsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
             }
 
             this.neuronalesNetz.Train(1000000, 0.3, 0.001, trainingsMuster);
@@ -42,7 +42,7 @@ namespace TicTacToe.GameLogic
 
             for (int i = 0; i < 9; i++)
             {
-                trainingsMuster.Add(new TraininsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
+                trainingsMuster.Add(new TrainingsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
             }
 
             List<string> result = new List<string>();

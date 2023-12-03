@@ -15,13 +15,19 @@
 
             List<string> boardStrings = new List<string>();
 
-            boardIterator.Iterate(ThreeXOBoard.Empty(Player.Player), 0, (board, depth) =>
-            {
-                if (depth == 2)
+            boardIterator.Iterate(
+                ThreeXOBoard.Empty(Player.Player), 
+                0, 
+                (board, depth) =>
                 {
-                    boardStrings.Add(board.ToString());
-                }
-            });
+                    if (depth == 2)
+                    {
+                        boardStrings.Add(board.ToString());
+                    }
+                },
+                (board, depth) =>
+                {
+                });
 
         }
     }

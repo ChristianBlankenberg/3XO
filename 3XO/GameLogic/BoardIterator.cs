@@ -9,22 +9,27 @@ namespace GameLogic
         {
         }
      
-        public void Iterate(IBoardBase board, int depth, Action<IBoardBase, int> iteration)
+        public void Iterate(
+            IBoardBase board, 
+            int depth, 
+            Action<IBoardBase, int> iteration,
+            Action<IBoardBase, int> terminal)
         {
-            iteration(board, depth);
 
             if (board.IsTerminal())
             {
+                terminal(board, depth);
             }
             else
             {
+                iteration(board, depth);
                 var nrOfVariants = board.NrOfVariants();
 
                 for (int variante = 0; variante < nrOfVariants; variante++)
                 {
                     board.SetVariant(variante);
 
-                    this.Iterate(board, depth+1, iteration);
+                    this.Iterate(board, depth+1, iteration, terminal);
 
                     board.ReSetVariant();
                 }

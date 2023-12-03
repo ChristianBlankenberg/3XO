@@ -269,12 +269,12 @@ namespace TicTacToe.GameLogic
         public int FirstDiffIdx(IBoard board)
         {
             var allFieldIdxs = this.AllFieldIdxs();
-            foreach(var fieldIdx in allFieldIdxs)
+            foreach (var fieldIdx in allFieldIdxs)
             {
                 if (this.Get(fieldIdx) != board.Get(fieldIdx))
                 {
                     return fieldIdx;
-                } 
+                }
             }
 
             return -1;
@@ -318,12 +318,20 @@ namespace TicTacToe.GameLogic
         public void SetVariant(int nr)
         {
             this.lastSetIdx.Push(this.GetEmptyFieldIdxs()[nr]);
-            this.Set(this.lastSetIdx.Peek(), this.PlayersTurn(this.StartPlayer));            
+            this.Set(this.lastSetIdx.Peek(), this.PlayersTurn(this.StartPlayer));
         }
 
         public void ReSetVariant() => this.Set(this.lastSetIdx.Pop(), Player.None);
 
         public IBoardBase GetActVariant() => this;
+
+        public void SwitchPlayers()
+        {
+            for (int i = 0; i < this.boardFields.Count(); i++)
+            {
+                this.Set(i, this.Get(i).Opponent());
+            }
+        }
 
         private ThreeXOBoard()
         {
