@@ -85,6 +85,8 @@ namespace TicTacToe
                         Console.WriteLine($"Error (Sum) real : {overAllError = neuronalNet.OverAllErrorRealValues(trainData)}");
                     }
 
+                    neuronalNet.SaveToFile("nn.txt");
+
                     break;
 
                 case ConsoleKey.D4:
