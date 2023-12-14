@@ -27,7 +27,7 @@ namespace TicTacToe
                 ("Run Game (Computer begins)", () => { this.RunGame(Player.Computer); }),
                 ("Test", () => { this.Test(); }),
                 ("Debug", () => { this.Debug(); }),
-            }) ;
+            });
         }
 
         private void CreateMenu(List<(string, Action)> menuList)
@@ -41,15 +41,16 @@ namespace TicTacToe
             Console.WriteLine("");
             Console.WriteLine(" 1 - Run Game ");
             Console.WriteLine(" 2 - Create Neuronal Net Training Data and Save to File");
-            Console.WriteLine(" 3 - load Neuronal Net Training Data from File and train Neuronal Net");
-            Console.WriteLine(" 4 - Test ");
-            Console.WriteLine(" 5 - Debug ");
+            Console.WriteLine(" 3 - Load Neuronal Net Training Data from File and train Neuronal Net");
+            Console.WriteLine(" 4 - Load  saved NN and train further");
+            Console.WriteLine(" 5 - Load Neuronal Net Weights");
+            Console.WriteLine(" 6 - Debug ");
 
             Console.WriteLine("");
 
             var key = Console.ReadKey();
 
-            switch(key.Key)
+            switch (key.Key)
             {
                 case ConsoleKey.D1:
                 case ConsoleKey.NumPad1:
@@ -58,46 +59,36 @@ namespace TicTacToe
 
                 case ConsoleKey.D2:
                 case ConsoleKey.NumPad2:
-                    this.SaveNNTrainingData(
+                    this.SaveNNTrainingDataToTextfile(
                         this.CreateNNTrainingData(Player.Player),
-                        @"C:\temp\nnTrainingData.xml");
+                        @"nnTrainingData.txt");
                     break;
 
                 case ConsoleKey.D3:
                 case ConsoleKey.NumPad3:
-                    var trainingData = this.LoadTrainingData(@"C:\temp\nnTrainingData.xml");
-                    NeuronalNet neuronalNet = new NeuronalNet(new int[]{ 9, 18, 18, 9 });
-
-                    List<ITrainingPattern> trainData = trainingData.TrainingSet.Cast<ITrainingPattern>().ToList();
-
-                    const double breakCondition = 1e-3;
-
-                    double overAllError = double.PositiveInfinity;
-                    for (int i = 0; i < 100000; i++)
-                    {
-                        Console.WriteLine(neuronalNet.Train(
-                            numberOfSteps: 10,
-                            learningRate: 0.1,
-                            tolerance: breakCondition,
-                            trainingPatterns: trainData));
-
-                        Console.WriteLine($"Error (Sum) : {neuronalNet.OverAllError(trainData)}");
-                        Console.WriteLine($"Error (Sum) real : {overAllError = neuronalNet.OverAllErrorRealValues(trainData)}");
-                    }
-
-                    neuronalNet.SaveToFile("nn.txt");
-
                     break;
 
                 case ConsoleKey.D4:
                 case ConsoleKey.NumPad4:
-                    this.Test();
                     break;
                 case ConsoleKey.D5:
                 case ConsoleKey.NumPad5:
+                    this.LoadNeuronalNetWeights();
+                    break;
+                case ConsoleKey.D6:
+                case ConsoleKey.NumPad6:
                     this.Debug();
                     break;
             }
+        }
+
+        private GameNeuronalNet LoadNeuronalNetWeights()
+        {
+            GameNeuronalNet gameNeuronalNet = new GameNeuronalNet();
+            gameNeuronalNet.LoadAndSetWeights(1, "wih.csv");
+            gameNeuronalNet.LoadAndSetWeights(2, "who.csv");
+
+            return gameNeuronalNet;
         }
 
         private TrainingData LoadTrainingData(string fileName)
@@ -111,6 +102,15 @@ namespace TicTacToe
         {
             var trainingDataJSON = JsonConvert.SerializeObject(trainingData);
             File.WriteAllText(fileName, trainingDataJSON);
+        }
+
+        private void SaveNNTrainingDataToTextfile(TrainingData trainingData, string fileName)
+        {
+            foreach (var tp in trainingData.TrainingSet)
+            {
+                File.AppendAllText(fileName, $"{string.Join(",", tp.InputVector)}{Environment.NewLine}");
+                File.AppendAllText(fileName, $"{string.Join(",", tp.OutputVector)}{Environment.NewLine}");
+            }
         }
 
         private TrainingData CreateNNTrainingData(Player firstPlayer)
@@ -133,7 +133,7 @@ namespace TicTacToe
             Dictionary<string, int> neuronalNetTrainingData = new Dictionary<string, int>();
 
             BoardIterator boardIterator = new BoardIterator();
-            AlphaBetaPruneClass alphaBetaPruneClass = new AlphaBetaPruneClass(Player.Player, Player.Computer);
+            AlphaBetaPruneClass alphaBetaPruneClass = new AlphaBetaPruneClass(Player.Computer, Player.Player);
 
             boardIterator.Iterate(ThreeXOBoard.Empty(firstPlayer), 0,
                 terminal: (boardIteration, depth) =>
@@ -143,7 +143,12 @@ namespace TicTacToe
                 {
                     if (!neuronalNetTrainingData.ContainsKey(boardIteration.ToString()))
                     {
-                        neuronalNetTrainingData.Add(boardIteration.ToString(), GameLogic.GameLogic.GetMaxValueFieldIdx(boardIteration as IBoard, alphaBetaPruneClass));
+                        var boardAnswer = GameLogic.GameLogic.GetMaxValueFieldIdx(boardIteration as IBoard, alphaBetaPruneClass);
+                        if ((boardIteration as ThreeXOBoard).Get(boardAnswer) != Player.None)
+                        {
+                            throw new ArithmeticException("boardAnswer != Player.None");
+                        }
+                        neuronalNetTrainingData.Add(boardIteration.ToString(), boardAnswer);
                     }
                     else
                     {

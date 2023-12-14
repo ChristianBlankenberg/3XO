@@ -29,8 +29,7 @@
             this.gameLogicMinMax = new MinMaxLogicClass(MinPlayer, MaxPlayer);
             this.gameLogicAlphaBetaPrune = new AlphaBetaPruneClass(MinPlayer, MaxPlayer);
 
-            this.gameNeuronal = new GameNeuronalNet();
-            this.gameNeuronal.Init();
+            this.gameNeuronal = new GameNeuronalNet();            
         }
 
         internal void Run(Func<Coordinates> getCoordinatesFromInput, Action<List<string>> outputAction)

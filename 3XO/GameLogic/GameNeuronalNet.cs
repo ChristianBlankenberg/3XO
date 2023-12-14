@@ -3,69 +3,77 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NeuronalNet;
+using NeuronalNet.Data;
 
 namespace TicTacToe.GameLogic
 {
     internal class GameNeuronalNet
     {
-        INeuronalNet neuronalesNetz;
+        List<List<double>> values;
+        List<List<double[]>> weights;
 
         internal GameNeuronalNet()
         {
-            this.neuronalesNetz = new NeuronalNet.NeuronalNet(new int[] { 9, 12, 9 });
+            this.weights = new List<List<double[]>>();            
+            this.weights.Add(Enumerable.Repeat(Enumerable.Repeat(0.0, 9).ToArray(), 400).ToList());
+            this.weights.Add(Enumerable.Repeat(Enumerable.Repeat(0.0, 400).ToArray(), 9).ToList());
+
+            this.values = new List<List<double>>();
+            this.values.Add(Enumerable.Repeat(0.0, 9).ToList());
+            this.values.Add(Enumerable.Repeat(0.0, 400).ToList());
+            this.values.Add(Enumerable.Repeat(0.0, 9).ToList());
+
+            this.LoadAndSetWeights(0, "wih.csv");
+            this.LoadAndSetWeights(1, "who.csv");
+        }
+
+        internal void LoadAndSetWeights(int layerIdx, string csvFilename)
+        {
+            var fileLines = File.ReadAllLines(csvFilename);
+
+            if (fileLines.Count() == this.weights[layerIdx].Count)
+            {
+                for (int lineNr = 0; lineNr < fileLines.Count(); lineNr++)
+                {
+                    var fileLine = fileLines[lineNr];
+                    double[] doubleVals = fileLine.Split(new string[] { "," }, StringSplitOptions.None).Select(s => Convert.ToDouble(s.Replace(".", ","))).ToArray();
+
+                    this.weights[layerIdx][lineNr] = doubleVals.ToArray();
+                }
+            }
+            else
+            {
+                throw new ArithmeticException("fileLines.Count() == layer.Count");
+            }
         }
 
         internal Coordinates GetOutput(IBoard board)
         {
-            double[] output = this.neuronalesNetz.Calculate(this.GetInputLayer(board));
+            this.values[0] = this.GetInputLayer(board).ToList();
 
-            var index = output.ToList().FindIndex(x => x == output.Max());
+            for (int layerIdx = 1; layerIdx < 3; layerIdx++)
+            {
+                for (int valueIdx = 0; valueIdx < this.values[layerIdx].Count; valueIdx++)
+                {
+                    this.values[layerIdx][valueIdx] = 0;
+                    for (int weightIdx = 0; weightIdx < this.weights[layerIdx-1][valueIdx].Length; weightIdx++)
+                    {
+                        this.values[layerIdx][valueIdx] += this.weights[layerIdx-1][valueIdx][weightIdx] * this.values[layerIdx-1][weightIdx];
+                    }
 
+                    this.values[layerIdx][valueIdx] = this.Sigmoid(this.values[layerIdx][valueIdx]);
+                }
+            }
+
+            var index = this.values[2].ToList().FindIndex(x => x == this.values[2].Max());
             return new Coordinates(index);
         }
 
-        internal void Init()
+        public double Sigmoid(double value)
         {
-            List<ITrainingPattern> trainingsMuster = new List<ITrainingPattern>();
-
-            for (int i = 0; i < 9; i++)
-            {
-                trainingsMuster.Add(new TrainingsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
-            }
-
-            this.neuronalesNetz.Train(1000000, 0.3, 0.001, trainingsMuster);
+            return (1.0 / (1.0 + Math.Pow(Math.E, -value)));
         }
 
-        internal List<string> Test()
-        {
-            List<ITrainingPattern> trainingsMuster = new List<ITrainingPattern>();
-
-            for (int i = 0; i < 9; i++)
-            {
-                trainingsMuster.Add(new TrainingsPattern(this.Get3XOVector(i), this.Get3XOVector(8 - i)));
-            }
-
-            List<string> result = new List<string>();
-            foreach (ITrainingPattern tm in trainingsMuster)
-            {
-                string outStr = string.Join(", ", tm.InputVector);
-                double[] ausgabe = this.neuronalesNetz.Calculate(tm.OutputVector);
-                outStr += " : ";
-                outStr += string.Join(", ", ausgabe);
-                result.Add(outStr);
-            }
-
-            return result;
-        }
-
-        private double[] GetInputLayer(IBoard board) => board.AllFields().Select(b => b.AsDouble()).ToArray();
-
-        private double[] Get3XOVector(int idx)
-        {
-            double[] result = new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            result[idx] = 1;
-
-            return result;
-        }
+        private double[] GetInputLayer(IBoard board) => board.AllFields().Select(b => b.AsInt() - 1.0).ToArray();
     }
 }
