@@ -9,7 +9,7 @@
     {
         private const Player MinPlayer = Player.Computer;
         private const Player MaxPlayer = Player.Player;
-        private const CalculationMethod ComputerCalculationMethod = CalculationMethod.AlphaBetaPrune;
+        private const CalculationMethod ComputerCalculationMethod = CalculationMethod.NeuronalNet;
 
         private Func<Coordinates> getCoordinatesFromInput;
         private Action<List<string>> outputAction;
