@@ -14,9 +14,9 @@
         Player
     }
 
-    internal static class PlayerExtensions
+    public static class PlayerExtensions
     {
-        internal static Player PlayerFromString(this string playerString)
+        public static Player PlayerFromString(this string playerString)
         {
             if (playerString == " ")
             {
@@ -34,8 +34,7 @@
             return Player.Unknown;
         }
 
-
-        internal static string AsString(this Player player)
+        public static string AsString(this Player player)
         {
             switch (player)
             {

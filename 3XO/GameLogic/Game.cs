@@ -20,7 +20,12 @@
         private GameNeuronalNet gameNeuronal;
         public Player StartPlayer { get; }
 
-        internal Game(ThreeXOBoard board, Player startPlayer)
+        public Game(Player startPlayer) 
+            : this(ThreeXOBoard.Empty(startPlayer), startPlayer)
+        {
+        }
+
+        public Game(ThreeXOBoard board, Player startPlayer)
         {
             this.board = board;
             this.StartPlayer = startPlayer;
@@ -31,6 +36,10 @@
 
             this.gameNeuronal = new GameNeuronalNet();            
         }
+
+        public void Set(int fieldIdx) => this.board.Set(fieldIdx);
+
+        public Player Get(int fieldIdx) => this.board.Get(fieldIdx);
 
         internal void Run(Func<Coordinates> getCoordinatesFromInput, Action<List<string>> outputAction)
         {
@@ -145,8 +154,6 @@
         private void Clear() => this.board = ThreeXOBoard.Empty(this.StartPlayer);
 
         private bool IsEmpty(int fieldIdx) => this.board.IsEmpty(fieldIdx);
-
-        private void Set(int fieldIdx) => this.board.Set(fieldIdx);
 
         private void Set(CalculationMethod calculationMethod)
         {
